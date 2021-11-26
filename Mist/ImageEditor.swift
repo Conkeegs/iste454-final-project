@@ -13,6 +13,7 @@ struct ImageEditor: View {
         VStack(alignment: .center, spacing: 0, content: {
             //if clicked, gets rid of all image editing options and allows 'Save' button to be shown instead (at the bottom of the page)
             DoneButton()
+            //s
             
             //VStack to create all of the image editing UI
             VStack(alignment: .center, spacing: 20, content: {
