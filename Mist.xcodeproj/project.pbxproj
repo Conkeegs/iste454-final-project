@@ -13,6 +13,8 @@
 		AB513B1A2750158C000B418E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB513B192750158C000B418E /* Preview Assets.xcassets */; };
 		AB513B2127501892000B418E /* ImageEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB513B2027501892000B418E /* ImageEditor.swift */; };
 		AB513B2427503274000B418E /* FjallaOne-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB513B2327503274000B418E /* FjallaOne-Regular.ttf */; };
+		AB513B272751FF7D000B418E /* ImageSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB513B262751FF7D000B418E /* ImageSelector.swift */; };
+		AB804B9C27547B9500267C47 /* WatermarkImageSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB804B9B27547B9500267C47 /* WatermarkImageSelector.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +26,8 @@
 		AB513B2027501892000B418E /* ImageEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEditor.swift; sourceTree = "<group>"; };
 		AB513B2327503274000B418E /* FjallaOne-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "FjallaOne-Regular.ttf"; sourceTree = "<group>"; };
 		AB513B252750331C000B418E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		AB513B262751FF7D000B418E /* ImageSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSelector.swift; sourceTree = "<group>"; };
+		AB804B9B27547B9500267C47 /* WatermarkImageSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatermarkImageSelector.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -40,6 +44,7 @@
 		AB513B062750158A000B418E = {
 			isa = PBXGroup;
 			children = (
+				AB804B9B27547B9500267C47 /* WatermarkImageSelector.swift */,
 				AB513B112750158B000B418E /* Mist */,
 				AB513B102750158B000B418E /* Products */,
 			);
@@ -61,6 +66,7 @@
 				AB513B122750158B000B418E /* MistApp.swift */,
 				AB513B142750158B000B418E /* ContentView.swift */,
 				AB513B2027501892000B418E /* ImageEditor.swift */,
+				AB513B262751FF7D000B418E /* ImageSelector.swift */,
 				AB513B162750158C000B418E /* Assets.xcassets */,
 				AB513B182750158C000B418E /* Preview Content */,
 			);
@@ -156,6 +162,8 @@
 			files = (
 				AB513B2127501892000B418E /* ImageEditor.swift in Sources */,
 				AB513B152750158B000B418E /* ContentView.swift in Sources */,
+				AB513B272751FF7D000B418E /* ImageSelector.swift in Sources */,
+				AB804B9C27547B9500267C47 /* WatermarkImageSelector.swift in Sources */,
 				AB513B132750158B000B418E /* MistApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
