@@ -529,7 +529,8 @@ struct ImageOptions: View {
         ScrollView(.horizontal, showsIndicators: false, content: {
             HStack(alignment: .center, spacing: 10, content: {
                 Button(action: {
-                    print("Filter 1")
+                    //apply filter with intensity
+                    //toggle filter selected and edit background color
                 }, label: {
                     Text("Filter1")
                         .font(.custom("Fjalla One", size: 22))

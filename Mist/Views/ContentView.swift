@@ -22,6 +22,7 @@ struct ContentView: View {
             }
             .frame(maxWidth: .infinity)
             .background(Color.cyan)
+            .preferredColorScheme(.dark)
         }) //NavigationView
     } //body
 }//View
