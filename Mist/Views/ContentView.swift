@@ -8,24 +8,17 @@
 import SwiftUI
 
 struct ContentView: View {
-    
-    
     var body: some View {
-        
-        VStack{
-            
-            NavigationView(content: {
-//                YourTemplates()
-                NavigationLink("+", destination: {
-                    ImageEditor()
-                })
-                    .frame(width: 40.0, height: 40.0)
-                    .background(Color.gray).padding(5)
-                    .overlay(RoundedRectangle(cornerRadius: 3).stroke(Color.white))
-                    .offset(x: 150, y: 280)
-            }) //NavigationView
-            Spacer()
-        }//VStack
+        NavigationView(content: {
+            //                YourTemplates()
+            NavigationLink("+", destination: {
+                ImageEditor()
+            })
+                .frame(width: 40.0, height: 40.0)
+                .background(Color.gray).padding(5)
+                .overlay(RoundedRectangle(cornerRadius: 3).stroke(Color.white))
+                .offset(x: 150, y: 280)
+        }) //NavigationView
     } //body
 }
 
