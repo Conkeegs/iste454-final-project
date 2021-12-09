@@ -29,6 +29,10 @@ struct ImageEditor: View {
     @State private var showingWatermarkTextInput = false
     @State private var watermarkTextInput = ""
     @State private var showingWatermarkCharacterLimitAlert = false
+    @State private var showingWatermarkOptions = false
+    @State private var watermarkSelected = false
+    @State private var watermarkMarchingAntsValue: CGFloat = 0
+    @State private var watermarkSelectedAtLeastOnce = false
     
     var body: some View {
         //vstack to align 'DoneButton' properly
@@ -39,13 +43,13 @@ struct ImageEditor: View {
             //VStack to create all of the image editing UI
             VStack(alignment: .center, spacing: 20, content: {
                 //view for the image container and its plus button
-                ImageContainer(showingImageSelector: $showingImageSelector, imageData: $imageData, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, imageMarchingAntsValue: $imageMarchingAntsValue, imageSelectedAtLeastOnce: $imageSelectedAtLeastOnce, imageSelected: $imageSelected, showingImageOptions: $showingImageOptions)
+                ImageContainer(showingImageSelector: $showingImageSelector, imageData: $imageData, watermarkImageData: $watermarkImageData, watermarkSelected: $watermarkSelected, showingWatermarkOptions: $showingWatermarkOptions, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, imageMarchingAntsValue: $imageMarchingAntsValue, imageSelectedAtLeastOnce: $imageSelectedAtLeastOnce, imageSelected: $imageSelected, showingImageOptions: $showingImageOptions)
                 
                 //view for the watermark container and its plus button
-                WatermarkContainer(showingWatermarkSelector: $showingWatermarkSelector, showingWatermarkImageSelector: $showingWatermarkImageSelector, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, showingWatermarkCharacterLimitAlert: $showingWatermarkCharacterLimitAlert)
+                WatermarkContainer(showingWatermarkSelector: $showingWatermarkSelector, showingWatermarkImageSelector: $showingWatermarkImageSelector, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, showingWatermarkCharacterLimitAlert: $showingWatermarkCharacterLimitAlert, watermarkSelected: $watermarkSelected, watermarkMarchingAntsValue: $watermarkMarchingAntsValue, watermarkSelectedAtLeastOnce: $watermarkSelectedAtLeastOnce, showingWatermarkOptions: $showingWatermarkOptions, showingImageOptions: $showingImageOptions, imageSelected: $imageSelected)
                 
                 //options for editing image/watermark, depending on which one is selected
-                Options(showingImageOptions: $showingImageOptions)
+                Options(showingImageOptions: $showingImageOptions, showingWatermarkOptions: $showingWatermarkOptions)
                 
                 //This button can either say 'Apply' (to transform the image/watermark) or 'Save' to save the edited image to the user's camera roll (when
                 BottomButton()
@@ -61,6 +65,8 @@ struct ImageContainer: View {
     @Binding var imageData: Data
     //binding to check if watermark image is selected
     @Binding var watermarkImageData: Data
+    @Binding var watermarkSelected: Bool
+    @Binding var showingWatermarkOptions: Bool
     //binding to check if watermark text is selected
     @Binding var showingWatermarkTextInput: Bool
     //binding for watermark text value
@@ -121,15 +127,20 @@ struct ImageContainer: View {
                                         imageMarchingAntsValue -= 20
                                     })
                                     
-                                    withAnimation(.easeInOut, {
-                                        showingImageOptions = true
-                                    })
-                                    
                                     imageSelectedAtLeastOnce = true
                                 }
                                     
                                 if !imageSelected {
                                     imageSelected = true
+                                    watermarkSelected = false
+                                    
+                                    withAnimation(.easeInOut, {
+                                        showingImageOptions = true
+                                    })
+                                    
+                                    withAnimation(.easeInOut, {
+                                        showingWatermarkOptions = false
+                                    })
                                 } else {
                                     imageSelected = false
                                     
@@ -160,15 +171,20 @@ struct ImageContainer: View {
                                     imageMarchingAntsValue -= 20
                                 })
                                 
-                                withAnimation(.easeInOut, {
-                                    showingImageOptions = true
-                                })
-                                
                                 imageSelectedAtLeastOnce = true
                             }
                                 
                             if !imageSelected {
                                 imageSelected = true
+                                watermarkSelected = false
+                                
+                                withAnimation(.easeInOut, {
+                                    showingImageOptions = true
+                                })
+                                
+                                withAnimation(.easeInOut, {
+                                    showingWatermarkOptions = false
+                                })
                             } else {
                                 imageSelected = false
                                 
@@ -198,15 +214,20 @@ struct ImageContainer: View {
                                     imageMarchingAntsValue -= 20
                                 })
                                 
-                                withAnimation(.easeInOut, {
-                                    showingImageOptions = true
-                                })
-                                
                                 imageSelectedAtLeastOnce = true
                             }
                                 
                             if !imageSelected {
                                 imageSelected = true
+                                watermarkSelected = false
+                                
+                                withAnimation(.easeInOut, {
+                                    showingImageOptions = true
+                                })
+                                
+                                withAnimation(.easeInOut, {
+                                    showingWatermarkOptions = false
+                                })
                             } else {
                                 imageSelected = false
                                 
@@ -249,18 +270,24 @@ struct ImageContainer: View {
 
 struct Options: View {
     @Binding var showingImageOptions: Bool
+    @Binding var showingWatermarkOptions: Bool
     
     var body: some View {
         VStack(alignment: .center, spacing: 20, content: {
             ZStack(alignment: .center, content: {
                 Rectangle()
-                    .frame(width: showingImageOptions ? 340 : 0, height: showingImageOptions ? 70 : 0)
+                    .frame(width: showingImageOptions || showingWatermarkOptions ? 340 : 0, height: showingImageOptions || showingWatermarkOptions ? 70 : 0)
                     .shadow(color: Color(.sRGB, red: 229 / 255, green: 229 / 255, blue: 229 / 255, opacity: 1), radius: 5, x: 0, y: 0)
                     .foregroundColor(.white)
                 
                 //this holds the actual options (filters etc) to select for the image/watermark
-                ImageOptions()
-                    .frame(width: showingImageOptions ? 310 : 0, height: showingImageOptions ? 70 : 0)
+                if showingImageOptions {
+                    ImageOptions()
+                        .frame(width: showingImageOptions ? 310 : 0, height: showingImageOptions ? 70 : 0)
+                } else if showingWatermarkOptions {
+                    WatermarkOptions()
+                        .frame(width: showingWatermarkOptions ? 310 : 0, height: showingWatermarkOptions ? 70 : 0)
+                }
             })
             
             //this holds the slider or whatever tool is used to change the intensity of an option
@@ -295,6 +322,13 @@ struct WatermarkContainer: View {
     @Binding var showingWatermarkTextInput: Bool
     @Binding var watermarkTextInput: String
     @Binding var showingWatermarkCharacterLimitAlert: Bool
+    @Binding var watermarkSelected: Bool
+    @Binding var watermarkMarchingAntsValue: CGFloat
+    @Binding var watermarkSelectedAtLeastOnce: Bool
+    @Binding var showingWatermarkOptions: Bool
+    
+    @Binding var showingImageOptions: Bool
+    @Binding var imageSelected: Bool
     
     var body: some View {
         //if the waternark image selected is successfully created, display it. else, just display the watermark selector container (the smaller one with the 'plus' button)
@@ -309,6 +343,42 @@ struct WatermarkContainer: View {
                 .background(Color.white)
                 .cornerRadius(/*@START_MENU_TOKEN@*/20.0/*@END_MENU_TOKEN@*/)
                 .shadow(color: Color(.sRGB, red: 229 / 255, green: 229 / 255, blue: 229 / 255, opacity: 1), radius: 5, x: 0, y: 0)
+                .onAppear(perform: {
+                    watermarkSelected = false
+                    watermarkSelectedAtLeastOnce = false
+                })
+                .onTapGesture {
+                    if !watermarkSelectedAtLeastOnce {
+                        withAnimation(.linear.repeatForever(autoreverses: false), {
+                            watermarkMarchingAntsValue -= 20
+                        })
+                        
+                        watermarkSelectedAtLeastOnce = true
+                    }
+                        
+                    if !watermarkSelected {
+                        watermarkSelected = true
+                        imageSelected = false
+                        
+                        withAnimation(.easeInOut, {
+                            showingWatermarkOptions = true
+                        })
+                        
+                        withAnimation(.easeInOut, {
+                            showingImageOptions = false
+                        })
+                    } else {
+                        watermarkSelected = false
+                        
+                        withAnimation(.easeInOut, {
+                            showingWatermarkOptions = false
+                        })
+                    }
+                }
+                .overlay(
+                    watermarkSelected ? RoundedRectangle(cornerRadius: 20)
+                        .strokeBorder(Color.gray, style: StrokeStyle(lineWidth: 4, dash: [10], dashPhase: watermarkMarchingAntsValue)): RoundedRectangle(cornerRadius: 20).strokeBorder(Color.white, style: StrokeStyle(lineWidth: 0, dash: [10], dashPhase: watermarkMarchingAntsValue))
+                )
         }
         else if showingWatermarkTextInput {
             ZStack(alignment: .center, content: {
@@ -331,6 +401,42 @@ struct WatermarkContainer: View {
                 .background(Color.white)
                 .cornerRadius(/*@START_MENU_TOKEN@*/20.0/*@END_MENU_TOKEN@*/)
                 .shadow(color: Color(.sRGB, red: 229 / 255, green: 229 / 255, blue: 229 / 255, opacity: 1), radius: 5, x: 0, y: 0)
+                .onAppear(perform: {
+                    watermarkSelected = false
+                    watermarkSelectedAtLeastOnce = false
+                })
+                .onTapGesture {
+                    if !watermarkSelectedAtLeastOnce {
+                        withAnimation(.linear.repeatForever(autoreverses: false), {
+                            watermarkMarchingAntsValue -= 20
+                        })
+                        
+                        watermarkSelectedAtLeastOnce = true
+                    }
+                        
+                    if !watermarkSelected {
+                        watermarkSelected = true
+                        imageSelected = false
+                        
+                        withAnimation(.easeInOut, {
+                            showingWatermarkOptions = true
+                        })
+                        
+                        withAnimation(.easeInOut, {
+                            showingImageOptions = false
+                        })
+                    } else {
+                        watermarkSelected = false
+                        
+                        withAnimation(.easeInOut, {
+                            showingWatermarkOptions = false
+                        })
+                    }
+                }
+                .overlay(
+                    watermarkSelected ? RoundedRectangle(cornerRadius: 20)
+                        .strokeBorder(Color.gray, style: StrokeStyle(lineWidth: 4, dash: [10], dashPhase: watermarkMarchingAntsValue)): RoundedRectangle(cornerRadius: 20).strokeBorder(Color.white, style: StrokeStyle(lineWidth: 0, dash: [10], dashPhase: watermarkMarchingAntsValue))
+                )
         }
         else {
             Button(action: {
@@ -419,7 +525,7 @@ struct TopButtons: View {
 
 struct ImageOptions: View {
     var body: some View {
-        //the scrollable rectangle of options towards the bottom for filtering images and applying effects to text
+        //filter options for the main image
         ScrollView(.horizontal, showsIndicators: false, content: {
             HStack(alignment: .center, spacing: 10, content: {
                 Button(action: {
@@ -457,6 +563,55 @@ struct ImageOptions: View {
                     print("Filter 4")
                 }, label: {
                     Text("Filter4")
+                        .font(.custom("Fjalla One", size: 22))
+                        .frame(width: 120, height: 50)
+                }) //Button
+                    .foregroundColor(Color.black)
+            })
+        })
+    }
+}
+
+struct WatermarkOptions: View {
+    var body: some View {
+        //filter/text options for the watermark that is chosen
+        ScrollView(.horizontal, showsIndicators: false, content: {
+            HStack(alignment: .center, spacing: 10, content: {
+                Button(action: {
+                    print("Color 1")
+                }, label: {
+                    Text("Color1")
+                        .font(.custom("Fjalla One", size: 22))
+                        .frame(width: 120, height: 50)
+                }) //Button
+                    .foregroundColor(Color.white)
+                    .background(Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1))
+                    .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
+                
+                Button(action: {
+                    print("Color 2")
+                }, label: {
+                    Text("Color2")
+                        .font(.custom("Fjalla One", size: 22))
+                        .frame(width: 120, height: 50)
+                }) //Button
+                    .foregroundColor(Color.black)
+                
+                Button(action: {
+                    print("Color 3")
+                }, label: {
+                    Text("Color3")
+                        .font(.custom("Fjalla One", size: 22))
+                        .frame(width: 120, height: 50)
+                }) //Button
+                    .foregroundColor(Color.white)
+                    .background(Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1))
+                    .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
+                
+                Button(action: {
+                    print("Color 4")
+                }, label: {
+                    Text("Color4")
                         .font(.custom("Fjalla One", size: 22))
                         .frame(width: 120, height: 50)
                 }) //Button
