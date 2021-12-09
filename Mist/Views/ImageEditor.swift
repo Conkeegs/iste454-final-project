@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+
 /**
  This struct creates the visuals and functionality for the photo/watermark editing view
  */
