@@ -16,7 +16,7 @@ struct ContentView: View {
                 })
                     .frame(width: 40.0, height: 40.0)
                     .background(Color.gray).padding(5)
-                    .overlay(RoundedRectangle(cornerRadius: 3).stroke(Color.white))
+                    .cornerRadius(70)
                     .offset(x: 150, y: 280)
                 YourTemplates()
             }
