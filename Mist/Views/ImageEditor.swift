@@ -21,6 +21,8 @@ struct ImageEditor: View {
     @State private var imageSelectedAtLeastOnce = false
     @State private var imageSelected = false
     @State private var showingImageOptions = false
+    @State private var imageFilterName = ""
+    @State private var imageFilterIntensity: CGFloat = 0
     
     //initial values of the variables relating to the watermark image
     @State private var showingWatermarkSelector = false
@@ -43,7 +45,7 @@ struct ImageEditor: View {
             //VStack to create all of the image editing UI
             VStack(alignment: .center, spacing: 20, content: {
                 //view for the image container and its plus button
-                ImageContainer(showingImageSelector: $showingImageSelector, imageData: $imageData, watermarkImageData: $watermarkImageData, watermarkSelected: $watermarkSelected, showingWatermarkOptions: $showingWatermarkOptions, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, imageMarchingAntsValue: $imageMarchingAntsValue, imageSelectedAtLeastOnce: $imageSelectedAtLeastOnce, imageSelected: $imageSelected, showingImageOptions: $showingImageOptions)
+                ImageContainer(showingImageSelector: $showingImageSelector, imageData: $imageData, watermarkImageData: $watermarkImageData, watermarkSelected: $watermarkSelected, showingWatermarkOptions: $showingWatermarkOptions, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, imageMarchingAntsValue: $imageMarchingAntsValue, imageSelectedAtLeastOnce: $imageSelectedAtLeastOnce, imageSelected: $imageSelected, showingImageOptions: $showingImageOptions, imageFilterName: $imageFilterName, imageFilterIntensity: $imageFilterIntensity)
                 
                 //view for the watermark container and its plus button
                 WatermarkContainer(showingWatermarkSelector: $showingWatermarkSelector, showingWatermarkImageSelector: $showingWatermarkImageSelector, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, showingWatermarkCharacterLimitAlert: $showingWatermarkCharacterLimitAlert, watermarkSelected: $watermarkSelected, watermarkMarchingAntsValue: $watermarkMarchingAntsValue, watermarkSelectedAtLeastOnce: $watermarkSelectedAtLeastOnce, showingWatermarkOptions: $showingWatermarkOptions, showingImageOptions: $showingImageOptions, imageSelected: $imageSelected)
@@ -76,6 +78,12 @@ struct ImageContainer: View {
     @Binding var imageSelectedAtLeastOnce: Bool
     @Binding var imageSelected: Bool
     @Binding var showingImageOptions: Bool
+    //bindings for filter of image
+    @Binding var imageFilterName: String
+    @Binding var imageFilterIntensity: CGFloat
+    
+    //context for editing images
+    let ciContext = CIContext(options: nil)
     
     /**
         This function takes in the main image and the watermark image and layers the watermark image on top, then returns the edited image
@@ -102,6 +110,30 @@ struct ImageContainer: View {
             mainImage.draw(in: CGRect(origin: CGPoint.zero, size: mainImage.size))
             watermarkText.draw(in: CGRect(origin: watermarkPosition, size: CGSize(width: mainImage.size.width, height: mainImage.size.height)), withAttributes: watermarkTextAttributes)
         }
+    }
+    
+    /**
+        This function takes in the main image with no watermark and just returns it with possible filters applied
+     */
+    func getImage(_ mainImage: UIImage, imageFilterName: String, imageFilterIntensity: CGFloat) -> UIImage {
+        let filter = CIFilter(name: imageFilterName)
+        let ciImageFromMainImage = CIImage(image: mainImage)
+        
+        if filter != nil {
+            filter!.setValue(ciImageFromMainImage, forKey: kCIInputImageKey)
+            filter!.setValue(imageFilterIntensity, forKey: kCIInputIntensityKey)
+            
+            print("filtered")
+        
+            if let filteredImage = filter!.outputImage {
+                if let cgImageFromOutputImage = self.ciContext.createCGImage(filteredImage, from: filteredImage.extent) {
+                    return UIImage(cgImage: cgImageFromOutputImage)
+                }
+            }
+        }
+        
+        //if the above fails, return the image with no filters
+        return mainImage
     }
     
     var body: some View {
@@ -198,7 +230,7 @@ struct ImageContainer: View {
                                 .strokeBorder(Color.white, style: StrokeStyle(lineWidth: 4, dash: [10], dashPhase: imageMarchingAntsValue)): RoundedRectangle(cornerRadius: 20).strokeBorder(Color.white, style: StrokeStyle(lineWidth: 0, dash: [10], dashPhase: imageMarchingAntsValue))
                         )
                 } else {
-                    Image(uiImage: uiKitMainImage)
+                    Image(uiImage: getImage(uiKitMainImage, imageFilterName: imageFilterName, imageFilterIntensity: imageFilterIntensity))
                         .resizable()
                         .frame(minWidth: 340, idealWidth: 340, maxWidth: 340, minHeight: 340, idealHeight: 340, maxHeight: 340, alignment: .center)
                         .aspectRatio(contentMode: .fill)
