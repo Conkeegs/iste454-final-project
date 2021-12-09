@@ -109,6 +109,29 @@ struct ImageContainer: View {
                             .aspectRatio(contentMode: .fill)
                             .cornerRadius(20.0)
                             .shadow(color: Color(.sRGB, red: 229 / 255, green: 229 / 255, blue: 229 / 255, opacity: 1), radius: 5, x: 0, y: 0)
+                            .onAppear(perform: {
+                                imageSelected = false
+                                imageSelectedAtLeastOnce = false
+                            })
+                            .onTapGesture {
+                                if !imageSelectedAtLeastOnce {
+                                    withAnimation(.linear.repeatForever(autoreverses: false), {
+                                        imageMarchingAntsValue -= 20
+                                    })
+                                    
+                                    imageSelectedAtLeastOnce = true
+                                }
+                                    
+                                if !imageSelected {
+                                    imageSelected = true
+                                } else {
+                                    imageSelected = false
+                                }
+                            }
+                            .overlay(
+                                imageSelected ? RoundedRectangle(cornerRadius: 20)
+                                    .strokeBorder(Color.white, style: StrokeStyle(lineWidth: 4, dash: [10], dashPhase: imageMarchingAntsValue)): RoundedRectangle(cornerRadius: 20).strokeBorder(Color.white, style: StrokeStyle(lineWidth: 0, dash: [10], dashPhase: imageMarchingAntsValue))
+                            )
                     }
                 } else if (showingWatermarkTextInput) {
                     Image(uiImage: getImageWithWatermarkText(uiKitMainImage, watermarkTextInput, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.80)))
@@ -117,6 +140,29 @@ struct ImageContainer: View {
                         .aspectRatio(contentMode: .fill)
                         .cornerRadius(20.0)
                         .shadow(color: Color(.sRGB, red: 229 / 255, green: 229 / 255, blue: 229 / 255, opacity: 1), radius: 5, x: 0, y: 0)
+                        .onAppear(perform: {
+                            imageSelected = false
+                            imageSelectedAtLeastOnce = false
+                        })
+                        .onTapGesture {
+                            if !imageSelectedAtLeastOnce {
+                                withAnimation(.linear.repeatForever(autoreverses: false), {
+                                    imageMarchingAntsValue -= 20
+                                })
+                                
+                                imageSelectedAtLeastOnce = true
+                            }
+                                
+                            if !imageSelected {
+                                imageSelected = true
+                            } else {
+                                imageSelected = false
+                            }
+                        }
+                        .overlay(
+                            imageSelected ? RoundedRectangle(cornerRadius: 20)
+                                .strokeBorder(Color.white, style: StrokeStyle(lineWidth: 4, dash: [10], dashPhase: imageMarchingAntsValue)): RoundedRectangle(cornerRadius: 20).strokeBorder(Color.white, style: StrokeStyle(lineWidth: 0, dash: [10], dashPhase: imageMarchingAntsValue))
+                        )
                 } else {
                     Image(uiImage: uiKitMainImage)
                         .resizable()
@@ -124,8 +170,11 @@ struct ImageContainer: View {
                         .aspectRatio(contentMode: .fill)
                         .cornerRadius(20.0)
                         .shadow(color: Color(.sRGB, red: 229 / 255, green: 229 / 255, blue: 229 / 255, opacity: 1), radius: 5, x: 0, y: 0)
+                        .onAppear(perform: {
+                            imageSelected = false
+                            imageSelectedAtLeastOnce = false
+                        })
                         .onTapGesture {
-                            print(imageMarchingAntsValue)
                             if !imageSelectedAtLeastOnce {
                                 withAnimation(.linear.repeatForever(autoreverses: false), {
                                     imageMarchingAntsValue -= 20
