@@ -11,7 +11,6 @@ struct ContentView: View {
     var body: some View {
         NavigationView(content: {
             ZStack{
-                YourTemplates()
                 NavigationLink("+", destination: {
                     ImageEditor()
                 })
@@ -19,13 +18,10 @@ struct ContentView: View {
                     .background(Color.gray).padding(5)
                     .overlay(RoundedRectangle(cornerRadius: 3).stroke(Color.white))
                     .offset(x: 150, y: 280)
+                YourTemplates()
             }
+            .frame(maxWidth: .infinity)
+            .background(Color.cyan)
         }) //NavigationView
     } //body
-}
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
-}
+}//View
