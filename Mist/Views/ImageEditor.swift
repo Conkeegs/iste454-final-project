@@ -74,7 +74,7 @@ struct ImageContainer: View {
         
         return renderer.image { context in
             mainImage.draw(in: CGRect(origin: CGPoint.zero, size: mainImage.size))
-            waterMarkImage.draw(in: CGRect(origin: watermarkPosition, size: CGSize(width: 100, height: 100)))
+            waterMarkImage.draw(in: CGRect(origin: watermarkPosition, size: CGSize(width: mainImage.size.width * 0.15, height: mainImage.size.width * 0.10)))
         }
     }
     
@@ -84,12 +84,12 @@ struct ImageContainer: View {
     func getImageWithWatermarkText(_ mainImage: UIImage, _ watermarkText: String, watermarkPosition: CGPoint) -> UIImage {
         let renderer = UIGraphicsImageRenderer(size: mainImage.size)
         let watermarkTextColor = UIColor.orange
-        let watermarkFont = UIFont(name: "Fjalla One", size: 30)
+        let watermarkFont = UIFont(name: "Fjalla One", size: mainImage.size.width * 0.05)
         let watermarkTextAttributes = [NSAttributedString.Key.font: watermarkFont, NSAttributedString.Key.foregroundColor: watermarkTextColor] as [NSAttributedString.Key: Any]
         
         return renderer.image { context in
             mainImage.draw(in: CGRect(origin: CGPoint.zero, size: mainImage.size))
-            watermarkText.draw(in: CGRect(origin: watermarkPosition, size: CGSize(width: mainImage.size.width, height: 100)), withAttributes: watermarkTextAttributes)
+            watermarkText.draw(in: CGRect(origin: watermarkPosition, size: CGSize(width: mainImage.size.width, height: mainImage.size.height)), withAttributes: watermarkTextAttributes)
         }
     }
     
@@ -153,10 +153,12 @@ struct Options: View {
     var body: some View {
         VStack(alignment: .center, spacing: 20, content: {
             //this holds the actual options (filters etc) to select for the image/watermark
-            Rectangle()
+            GeometryReader(content: { _ in
+                ImageOptions()
+            })
                 .frame(width: 340, height: 70)
                 .shadow(color: Color(.sRGB, red: 229 / 255, green: 229 / 255, blue: 229 / 255, opacity: 1), radius: 5, x: 0, y: 0)
-                .foregroundColor(/*@START_MENU_TOKEN@*/.white/*@END_MENU_TOKEN@*/)
+                .foregroundColor(.white)
             
             //this hold the slider or whatever tool is used to change the intensity of an option
 //            Rectangle()
@@ -310,4 +312,36 @@ struct TopButtons: View {
         }) //HStack
             .frame(width: 340, height: 60)
     } //body
+}
+
+struct ImageOptions: View {
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false, content: {
+            HStack(alignment: .center, spacing: 10, content: {
+                Text("Filter1")
+                    .font(.custom("Fjalla One", size: 22))
+                    .frame(width: 120, height: 50)
+                    .foregroundColor(Color.white)
+                    .background(Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1))
+                    .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
+                
+                Text("Filter2")
+                    .font(.custom("Fjalla One", size: 22))
+                    .frame(width: 120, height: 50)
+                    .foregroundColor(Color.black)
+                
+                Text("Filter3")
+                    .font(.custom("Fjalla One", size: 22))
+                    .frame(width: 120, height: 50)
+                    .foregroundColor(Color.white)
+                    .background(Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1))
+                    .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
+                
+                Text("Filter4")
+                    .font(.custom("Fjalla One", size: 22))
+                    .frame(width: 120, height: 50)
+                    .foregroundColor(Color.black)
+            })
+        })
+    }
 }
