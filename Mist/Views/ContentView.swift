@@ -12,9 +12,13 @@ struct ContentView: View {
     
     var body: some View {
         NavigationView(content: {
-            NavigationLink("Image Editor", destination: {
+            NavigationLink("+", destination: {
                 ImageEditor()
-            }) //NavigationLink
+            })
+                .frame(width: 40.0, height: 40.0)
+                .background(Color.gray).padding(5)
+                .overlay(RoundedRectangle(cornerRadius: 3).stroke(Color.white))
+                .offset(x: 150, y: 280)                
         }) //NavigationView
     } //body
 }
