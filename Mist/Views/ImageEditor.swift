@@ -20,6 +20,7 @@ struct ImageEditor: View {
     @State private var imageMarchingAntsValue: CGFloat = 0
     @State private var imageSelectedAtLeastOnce = false
     @State private var imageSelected = false
+    @State private var showingImageOptions = false
     
     //initial values of the variables relating to the watermark image
     @State private var showingWatermarkSelector = false
@@ -38,13 +39,13 @@ struct ImageEditor: View {
             //VStack to create all of the image editing UI
             VStack(alignment: .center, spacing: 20, content: {
                 //view for the image container and its plus button
-                ImageContainer(showingImageSelector: $showingImageSelector, imageData: $imageData, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, imageMarchingAntsValue: $imageMarchingAntsValue, imageSelectedAtLeastOnce: $imageSelectedAtLeastOnce, imageSelected: $imageSelected)
+                ImageContainer(showingImageSelector: $showingImageSelector, imageData: $imageData, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, imageMarchingAntsValue: $imageMarchingAntsValue, imageSelectedAtLeastOnce: $imageSelectedAtLeastOnce, imageSelected: $imageSelected, showingImageOptions: $showingImageOptions)
                 
                 //view for the watermark container and its plus button
                 WatermarkContainer(showingWatermarkSelector: $showingWatermarkSelector, showingWatermarkImageSelector: $showingWatermarkImageSelector, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, showingWatermarkCharacterLimitAlert: $showingWatermarkCharacterLimitAlert)
                 
                 //options for editing image/watermark, depending on which one is selected
-                Options()
+                Options(showingImageOptions: $showingImageOptions)
                 
                 //This button can either say 'Apply' (to transform the image/watermark) or 'Save' to save the edited image to the user's camera roll (when
                 BottomButton()
@@ -68,6 +69,7 @@ struct ImageContainer: View {
     @Binding var imageMarchingAntsValue: CGFloat
     @Binding var imageSelectedAtLeastOnce: Bool
     @Binding var imageSelected: Bool
+    @Binding var showingImageOptions: Bool
     
     /**
         This function takes in the main image and the watermark image and layers the watermark image on top, then returns the edited image
@@ -119,6 +121,10 @@ struct ImageContainer: View {
                                         imageMarchingAntsValue -= 20
                                     })
                                     
+                                    withAnimation(.easeInOut, {
+                                        showingImageOptions = true
+                                    })
+                                    
                                     imageSelectedAtLeastOnce = true
                                 }
                                     
@@ -126,6 +132,10 @@ struct ImageContainer: View {
                                     imageSelected = true
                                 } else {
                                     imageSelected = false
+                                    
+                                    withAnimation(.easeInOut, {
+                                        showingImageOptions = false
+                                    })
                                 }
                             }
                             .overlay(
@@ -150,6 +160,10 @@ struct ImageContainer: View {
                                     imageMarchingAntsValue -= 20
                                 })
                                 
+                                withAnimation(.easeInOut, {
+                                    showingImageOptions = true
+                                })
+                                
                                 imageSelectedAtLeastOnce = true
                             }
                                 
@@ -157,6 +171,10 @@ struct ImageContainer: View {
                                 imageSelected = true
                             } else {
                                 imageSelected = false
+                                
+                                withAnimation(.easeInOut, {
+                                    showingImageOptions = false
+                                })
                             }
                         }
                         .overlay(
@@ -180,6 +198,10 @@ struct ImageContainer: View {
                                     imageMarchingAntsValue -= 20
                                 })
                                 
+                                withAnimation(.easeInOut, {
+                                    showingImageOptions = true
+                                })
+                                
                                 imageSelectedAtLeastOnce = true
                             }
                                 
@@ -187,6 +209,10 @@ struct ImageContainer: View {
                                 imageSelected = true
                             } else {
                                 imageSelected = false
+                                
+                                withAnimation(.easeInOut, {
+                                    showingImageOptions = false
+                                })
                             }
                         }
                         .overlay(
@@ -222,17 +248,19 @@ struct ImageContainer: View {
 }
 
 struct Options: View {
+    @Binding var showingImageOptions: Bool
+    
     var body: some View {
         VStack(alignment: .center, spacing: 20, content: {
             ZStack(alignment: .center, content: {
                 Rectangle()
-                    .frame(width: 340, height: 70)
+                    .frame(width: showingImageOptions ? 340 : 0, height: showingImageOptions ? 70 : 0)
                     .shadow(color: Color(.sRGB, red: 229 / 255, green: 229 / 255, blue: 229 / 255, opacity: 1), radius: 5, x: 0, y: 0)
                     .foregroundColor(.white)
                 
                 //this holds the actual options (filters etc) to select for the image/watermark
                 ImageOptions()
-                    .frame(width: 310, height: 70)
+                    .frame(width: showingImageOptions ? 310 : 0, height: showingImageOptions ? 70 : 0)
             })
             
             //this holds the slider or whatever tool is used to change the intensity of an option
