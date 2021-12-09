@@ -6,7 +6,8 @@
 //
 
 import SwiftUI
-
+import CoreImage
+import CoreImage.CIFilterBuiltins
 
 /**
  This struct creates the visuals and functionality for the photo/watermark editing view
@@ -16,6 +17,9 @@ struct ImageEditor: View {
     @State private var showingImageSelector = false
     @State private var imageData = Data(count: 0)
     @State private var rotatingImage = false
+    @State private var imageMarchingAntsValue: CGFloat = 0
+    @State private var imageSelectedAtLeastOnce = false
+    @State private var imageSelected = false
     
     //initial values of the variables relating to the watermark image
     @State private var showingWatermarkSelector = false
@@ -34,7 +38,7 @@ struct ImageEditor: View {
             //VStack to create all of the image editing UI
             VStack(alignment: .center, spacing: 20, content: {
                 //view for the image container and its plus button
-                ImageContainer(showingImageSelector: $showingImageSelector, imageData: $imageData, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput)
+                ImageContainer(showingImageSelector: $showingImageSelector, imageData: $imageData, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, imageMarchingAntsValue: $imageMarchingAntsValue, imageSelectedAtLeastOnce: $imageSelectedAtLeastOnce, imageSelected: $imageSelected)
                 
                 //view for the watermark container and its plus button
                 WatermarkContainer(showingWatermarkSelector: $showingWatermarkSelector, showingWatermarkImageSelector: $showingWatermarkImageSelector, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, showingWatermarkCharacterLimitAlert: $showingWatermarkCharacterLimitAlert)
@@ -50,12 +54,6 @@ struct ImageEditor: View {
     } //body
 }
 
-//struct ImageEditor_Previews: PreviewProvider {
-//    static var previews: some View {
-//        ImageEditor()
-//    }
-//}
-
 struct ImageContainer: View {
     //binding values for main image values
     @Binding var showingImageSelector: Bool
@@ -66,6 +64,10 @@ struct ImageContainer: View {
     @Binding var showingWatermarkTextInput: Bool
     //binding for watermark text value
     @Binding var watermarkTextInput: String
+    //bindings for marching ants animation when image is selected
+    @Binding var imageMarchingAntsValue: CGFloat
+    @Binding var imageSelectedAtLeastOnce: Bool
+    @Binding var imageSelected: Bool
     
     /**
         This function takes in the main image and the watermark image and layers the watermark image on top, then returns the edited image
@@ -122,6 +124,26 @@ struct ImageContainer: View {
                         .aspectRatio(contentMode: .fill)
                         .cornerRadius(20.0)
                         .shadow(color: Color(.sRGB, red: 229 / 255, green: 229 / 255, blue: 229 / 255, opacity: 1), radius: 5, x: 0, y: 0)
+                        .onTapGesture {
+                            print(imageMarchingAntsValue)
+                            if !imageSelectedAtLeastOnce {
+                                withAnimation(.linear.repeatForever(autoreverses: false), {
+                                    imageMarchingAntsValue -= 20
+                                })
+                                
+                                imageSelectedAtLeastOnce = true
+                            }
+                                
+                            if !imageSelected {
+                                imageSelected = true
+                            } else {
+                                imageSelected = false
+                            }
+                        }
+                        .overlay(
+                            imageSelected ? RoundedRectangle(cornerRadius: 20)
+                                .strokeBorder(Color.white, style: StrokeStyle(lineWidth: 4, dash: [10], dashPhase: imageMarchingAntsValue)): RoundedRectangle(cornerRadius: 20).strokeBorder(Color.white, style: StrokeStyle(lineWidth: 0, dash: [10], dashPhase: imageMarchingAntsValue))
+                        )
                 }
             }) //ZStack
         } else {
@@ -162,10 +184,9 @@ struct Options: View {
                 //this holds the actual options (filters etc) to select for the image/watermark
                 ImageOptions()
                     .frame(width: 310, height: 70)
-                
             })
             
-            //this hold the slider or whatever tool is used to change the intensity of an option
+            //this holds the slider or whatever tool is used to change the intensity of an option
 //            Rectangle()
 //                .frame(width: 340, height: 50)
 //                .shadow(color: Color(.sRGB, red: 229 / 255, green: 229 / 255, blue: 229 / 255, opacity: 1), radius: 5, x: 0, y: 0)
@@ -302,14 +323,14 @@ struct TopButtons: View {
                     .padding(.leading, 30)
             }) //Button
             
-            //spacer for space in between 'Done' and 'Rotate' buttons
+            //spacer for space in between 'Apply' and 'Rotate' buttons
             Spacer()
             
             //button for signaling the user is done editing the image
             Button(action: {
-                print("done")
+                print("apply")
             }, label: {
-                Text("Done")
+                Text("Apply")
                     .font(.custom("Fjalla One", size: 22))
                     .frame(width: 60, height: 60, alignment: .trailing)
                     .padding(.trailing, 30)
@@ -321,30 +342,47 @@ struct TopButtons: View {
 
 struct ImageOptions: View {
     var body: some View {
+        //the scrollable rectangle of options towards the bottom for filtering images and applying effects to text
         ScrollView(.horizontal, showsIndicators: false, content: {
             HStack(alignment: .center, spacing: 10, content: {
-                Text("Filter1")
-                    .font(.custom("Fjalla One", size: 22))
-                    .frame(width: 120, height: 50)
+                Button(action: {
+                    print("Filter 1")
+                }, label: {
+                    Text("Filter1")
+                        .font(.custom("Fjalla One", size: 22))
+                        .frame(width: 120, height: 50)
+                }) //Button
                     .foregroundColor(Color.white)
                     .background(Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1))
                     .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
                 
-                Text("Filter2")
-                    .font(.custom("Fjalla One", size: 22))
-                    .frame(width: 120, height: 50)
+                Button(action: {
+                    print("Filter 2")
+                }, label: {
+                    Text("Filter2")
+                        .font(.custom("Fjalla One", size: 22))
+                        .frame(width: 120, height: 50)
+                }) //Button
                     .foregroundColor(Color.black)
                 
-                Text("Filter3")
-                    .font(.custom("Fjalla One", size: 22))
-                    .frame(width: 120, height: 50)
+                Button(action: {
+                    print("Filter 3")
+                }, label: {
+                    Text("Filter3")
+                        .font(.custom("Fjalla One", size: 22))
+                        .frame(width: 120, height: 50)
+                }) //Button
                     .foregroundColor(Color.white)
                     .background(Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1))
                     .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
                 
-                Text("Filter4")
-                    .font(.custom("Fjalla One", size: 22))
-                    .frame(width: 120, height: 50)
+                Button(action: {
+                    print("Filter 4")
+                }, label: {
+                    Text("Filter4")
+                        .font(.custom("Fjalla One", size: 22))
+                        .frame(width: 120, height: 50)
+                }) //Button
                     .foregroundColor(Color.black)
             })
         })
