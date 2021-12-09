@@ -153,13 +153,17 @@ struct ImageContainer: View {
 struct Options: View {
     var body: some View {
         VStack(alignment: .center, spacing: 20, content: {
-            //this holds the actual options (filters etc) to select for the image/watermark
-            GeometryReader(content: { _ in
+            ZStack(alignment: .center, content: {
+                Rectangle()
+                    .frame(width: 340, height: 70)
+                    .shadow(color: Color(.sRGB, red: 229 / 255, green: 229 / 255, blue: 229 / 255, opacity: 1), radius: 5, x: 0, y: 0)
+                    .foregroundColor(.white)
+                
+                //this holds the actual options (filters etc) to select for the image/watermark
                 ImageOptions()
+                    .frame(width: 310, height: 70)
+                
             })
-                .frame(width: 340, height: 70)
-                .shadow(color: Color(.sRGB, red: 229 / 255, green: 229 / 255, blue: 229 / 255, opacity: 1), radius: 5, x: 0, y: 0)
-                .foregroundColor(.white)
             
             //this hold the slider or whatever tool is used to change the intensity of an option
 //            Rectangle()
