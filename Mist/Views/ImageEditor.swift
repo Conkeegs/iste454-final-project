@@ -39,25 +39,27 @@ struct ImageEditor: View {
     @State private var watermarkType = ""
     @StateObject var textFilterValues = TextFilterValues()
     
+    @State private var showingSaveButton = false
+    
     var body: some View {
         //vstack to align 'DoneButton' properly
         VStack(alignment: .center, spacing: 0, content: {
             //if clicked, gets rid of all image editing options and allows 'Save' button to be shown instead (at the bottom of the page)
-            TopButtons(rotatingImage: $rotatingImage)
+            TopButtons(rotatingImage: $rotatingImage, imageSelected: $imageSelected, watermarkSelected: $watermarkSelected, showingImageOptions: $showingImageOptions, showingWatermarkOptions: $showingWatermarkOptions, showingSaveButton: $showingSaveButton)
             
             //VStack to create all of the image editing UI
             VStack(alignment: .center, spacing: 20, content: {
                 //view for the image container and its plus button
-                ImageContainer(showingImageSelector: $showingImageSelector, imageData: $imageData, watermarkImageData: $watermarkImageData, watermarkSelected: $watermarkSelected, showingWatermarkOptions: $showingWatermarkOptions, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, imageMarchingAntsValue: $imageMarchingAntsValue, imageSelectedAtLeastOnce: $imageSelectedAtLeastOnce, imageSelected: $imageSelected, showingImageOptions: $showingImageOptions, imageFilterValues: imageFilterValues, watermarkImageFilterValues: watermarkImageFilterValues, textFilterValues: textFilterValues)
+                ImageContainer(showingImageSelector: $showingImageSelector, imageData: $imageData, watermarkImageData: $watermarkImageData, watermarkSelected: $watermarkSelected, showingWatermarkOptions: $showingWatermarkOptions, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, imageMarchingAntsValue: $imageMarchingAntsValue, imageSelectedAtLeastOnce: $imageSelectedAtLeastOnce, imageSelected: $imageSelected, showingImageOptions: $showingImageOptions, rotatingImage: $rotatingImage, showingSaveButton: $showingSaveButton, imageFilterValues: imageFilterValues, watermarkImageFilterValues: watermarkImageFilterValues, textFilterValues: textFilterValues)
                 
                 //view for the watermark container and its plus button
-                WatermarkContainer(showingWatermarkSelector: $showingWatermarkSelector, showingWatermarkImageSelector: $showingWatermarkImageSelector, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, showingWatermarkCharacterLimitAlert: $showingWatermarkCharacterLimitAlert, watermarkSelected: $watermarkSelected, watermarkMarchingAntsValue: $watermarkMarchingAntsValue, watermarkSelectedAtLeastOnce: $watermarkSelectedAtLeastOnce, showingWatermarkOptions: $showingWatermarkOptions, watermarkType: $watermarkType, showingImageOptions: $showingImageOptions, imageSelected: $imageSelected)
+                WatermarkContainer(showingWatermarkSelector: $showingWatermarkSelector, showingWatermarkImageSelector: $showingWatermarkImageSelector, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, showingWatermarkCharacterLimitAlert: $showingWatermarkCharacterLimitAlert, watermarkSelected: $watermarkSelected, watermarkMarchingAntsValue: $watermarkMarchingAntsValue, watermarkSelectedAtLeastOnce: $watermarkSelectedAtLeastOnce, showingWatermarkOptions: $showingWatermarkOptions, watermarkType: $watermarkType, showingSaveButton: $showingSaveButton, showingImageOptions: $showingImageOptions, imageSelected: $imageSelected)
                 
                 //options for editing image/watermark, depending on which one is selected
                 Options(showingImageOptions: $showingImageOptions, showingWatermarkOptions: $showingWatermarkOptions, imageSelected: $imageSelected, watermarkSelected: $watermarkSelected, watermarkType: $watermarkType, imageFilterValues: imageFilterValues, watermarkImageFilterValues: watermarkImageFilterValues, textFilterValues: textFilterValues)
                 
-                //This button can either say 'Apply' (to transform the image/watermark) or 'Save' to save the edited image to the user's camera roll (when
-                BottomButton(showingSaveImageAlert: $showingSaveImageAlert, imageData: $imageData, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, imageFilterValues: imageFilterValues, watermarkImageFilterValues: watermarkImageFilterValues, textFilterValues: textFilterValues)
+                //This button saves to camera roll
+                BottomButton(showingSaveImageAlert: $showingSaveImageAlert, imageData: $imageData, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, showingSaveButton: $showingSaveButton, imageFilterValues: imageFilterValues, watermarkImageFilterValues: watermarkImageFilterValues, textFilterValues: textFilterValues)
                     
             }) //VStack
         }) //VStack
@@ -81,6 +83,8 @@ struct ImageContainer: View {
     @Binding var imageSelectedAtLeastOnce: Bool
     @Binding var imageSelected: Bool
     @Binding var showingImageOptions: Bool
+    @Binding var rotatingImage: Bool
+    @Binding var showingSaveButton: Bool
     
     //context for editing images
     let ciContext = CIContext(options: nil)
@@ -118,6 +122,10 @@ struct ImageContainer: View {
                                 if !imageSelected {
                                     imageSelected = true
                                     watermarkSelected = false
+                                    
+                                    withAnimation(.easeInOut) {
+                                        showingSaveButton = false
+                                    }
                                     
                                     withAnimation(.easeInOut, {
                                         showingImageOptions = true
@@ -163,6 +171,10 @@ struct ImageContainer: View {
                                 imageSelected = true
                                 watermarkSelected = false
                                 
+                                withAnimation(.easeInOut) {
+                                    showingSaveButton = false
+                                }
+                                
                                 withAnimation(.easeInOut, {
                                     showingImageOptions = true
                                 })
@@ -205,6 +217,10 @@ struct ImageContainer: View {
                             if !imageSelected {
                                 imageSelected = true
                                 watermarkSelected = false
+                                
+                                withAnimation(.easeInOut) {
+                                    showingSaveButton = false
+                                }
                                 
                                 withAnimation(.easeInOut, {
                                     showingImageOptions = true
@@ -365,6 +381,7 @@ struct BottomButton: View {
     @Binding var watermarkImageData: Data
     @Binding var showingWatermarkTextInput: Bool
     @Binding var watermarkTextInput: String
+    @Binding var showingSaveButton: Bool
     
     @ObservedObject var imageFilterValues: ImageFilterValues
     @ObservedObject var watermarkImageFilterValues: WatermarkImageFilterValues
@@ -373,35 +390,39 @@ struct BottomButton: View {
     let ciContext = CIContext(options: nil)
     
     var body: some View {
-        Button(action: {
-            if let uiKitMainImage = UIImage(data: imageData) {
-                if watermarkImageData.count != 0 {
-                    if let uiKitWatermarkImage = UIImage(data: watermarkImageData) {
-                        ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImageWithWatermarkImage(uiKitMainImage, uiKitWatermarkImage, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.75), imageFilterNames: imageFilterValues.imageFilterNames, watermarkImageFilterNames: watermarkImageFilterValues.watermarkImageFilterNames, ciContext: ciContext))
+        if showingSaveButton {
+            Button(action: {
+                if let uiKitMainImage = UIImage(data: imageData) {
+                    if watermarkImageData.count != 0 {
+                        if let uiKitWatermarkImage = UIImage(data: watermarkImageData) {
+                            ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImageWithWatermarkImage(uiKitMainImage, uiKitWatermarkImage, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.75), imageFilterNames: imageFilterValues.imageFilterNames, watermarkImageFilterNames: watermarkImageFilterValues.watermarkImageFilterNames, ciContext: ciContext))
+                        }
+                    } else if (showingWatermarkTextInput) {
+                        ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImageWithWatermarkText(uiKitMainImage, watermarkTextInput, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.80), imageFilterNames: imageFilterValues.imageFilterNames, textFilterNames: textFilterValues.textFilterNames, ciContext: ciContext))
+                    } else {
+                        ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImage(uiKitMainImage, imageFilterNames: imageFilterValues.imageFilterNames, ciContext: ciContext, imageFilterValues: imageFilterValues))
                     }
-                } else if (showingWatermarkTextInput) {
-                    ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImageWithWatermarkText(uiKitMainImage, watermarkTextInput, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.80), imageFilterNames: imageFilterValues.imageFilterNames, textFilterNames: textFilterValues.textFilterNames, ciContext: ciContext))
-                } else {
-                    ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImage(uiKitMainImage, imageFilterNames: imageFilterValues.imageFilterNames, ciContext: ciContext, imageFilterValues: imageFilterValues))
-                } 
-            }
-            
-            showingSaveImageAlert = true
-        }, label: {
-            Text("MyButton")
-                .font(.custom("Fjalla One", size: 22))
-                .frame(width: 120, height: 60)
-        }) //Button
-            .foregroundColor(Color.white)
-            .background(Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1))
-            .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
-            .alert(isPresented: $showingSaveImageAlert) {
-                if imageData.count != 0 {
-                    return Alert(title: Text("Success"), message: Text("Photo saved to camera roll."), dismissButton: .default(Text("Ok")))
-                } else {
-                    return Alert(title: Text("Warning"), message: Text("Please select an image before saving."), dismissButton: .destructive(Text("Dismiss")))
                 }
-            }
+                
+                showingSaveImageAlert = true
+            }, label: {
+                Text("Save")
+                    .font(.custom("Fjalla One", size: 22))
+                    .frame(width: 120, height: 60)
+            }) //Button
+                .foregroundColor(Color.white)
+                .background(Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1))
+                .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
+                .alert(isPresented: $showingSaveImageAlert) {
+                    if imageData.count != 0 {
+                        return Alert(title: Text("Success"), message: Text("Photo saved to camera roll."), dismissButton: .default(Text("Ok")))
+                    } else {
+                        return Alert(title: Text("Warning"), message: Text("Please select an image before saving."), dismissButton: .destructive(Text("Dismiss")))
+                    }
+                }
+        } else {
+            Spacer()
+        }
     } //body
 }
 
@@ -418,6 +439,7 @@ struct WatermarkContainer: View {
     @Binding var watermarkSelectedAtLeastOnce: Bool
     @Binding var showingWatermarkOptions: Bool
     @Binding var watermarkType: String
+    @Binding var showingSaveButton: Bool
     
     @Binding var showingImageOptions: Bool
     @Binding var imageSelected: Bool
@@ -451,6 +473,10 @@ struct WatermarkContainer: View {
                     if !watermarkSelected {
                         watermarkSelected = true
                         imageSelected = false
+                        
+                        withAnimation(.easeInOut) {
+                            showingSaveButton = false
+                        }
                         
                         withAnimation(.easeInOut, {
                             showingWatermarkOptions = true
@@ -509,6 +535,10 @@ struct WatermarkContainer: View {
                     if !watermarkSelected {
                         watermarkSelected = true
                         imageSelected = false
+                        
+                        withAnimation(.easeInOut) {
+                            showingSaveButton = false
+                        }
                         
                         withAnimation(.easeInOut, {
                             showingWatermarkOptions = true
@@ -587,12 +617,17 @@ struct WatermarkContainer: View {
 
 struct TopButtons: View {
     @Binding var rotatingImage: Bool
+    @Binding var imageSelected: Bool
+    @Binding var watermarkSelected: Bool
+    @Binding var showingImageOptions: Bool
+    @Binding var showingWatermarkOptions: Bool
+    @Binding var showingSaveButton: Bool
 
     var body: some View {
         HStack(alignment: .center, spacing: 0, content: {
             //button for rotating the main image
             Button(action: {
-                print("rotate")
+                rotatingImage = true
             }, label: {
                 Image(systemName: "rotate.right")
                     .font(.system(size: 22))
@@ -600,18 +635,31 @@ struct TopButtons: View {
                     .padding(.leading, 30)
             }) //Button
             
-            //spacer for space in between 'Apply' and 'Rotate' buttons
+            //spacer for space in between 'Done' and 'Rotate' buttons
             Spacer()
             
             //button for signaling the user is done editing the image
-            Button(action: {
-                print("apply")
-            }, label: {
-                Text("Apply")
-                    .font(.custom("Fjalla One", size: 22))
-                    .frame(width: 60, height: 60, alignment: .trailing)
-                    .padding(.trailing, 30)
-            }) //Button
+            if imageSelected || watermarkSelected {
+                Button(action: {
+                    withAnimation(.easeInOut) {
+                        showingSaveButton = true
+                    }
+                    
+                    imageSelected = false
+                    watermarkSelected = false
+                    withAnimation(.easeInOut) {
+                        showingImageOptions = false
+                        showingWatermarkOptions = false
+                    }
+                }, label: {
+                    Text("Done")
+                        .font(.custom("Fjalla One", size: 22))
+                        .frame(width: 60, height: 60, alignment: .trailing)
+                        .padding(.trailing, 30)
+                }) //Button
+            } else {
+                Spacer()
+            }
         }) //HStack
             .frame(width: 340, height: 60)
     } //body
