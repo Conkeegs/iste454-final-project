@@ -11,46 +11,54 @@ struct YourTemplates: View {
     var body: some View {
         VStack{
             VStack{
-                Text("The top bar")
+                Text("Placeholder top")
                     .offset(x: 0, y: -20)
                     .font(.system(size: 40))
                 HStack{
-                    Rectangle()
-                        .fill(Color.gray)
+                    Image("p_4")
+                        .resizable()
                         .frame(width: 50, height: 50)
-                        .padding(.bottom)
-                    Rectangle()
-                        .fill(Color.gray)
+                        .scaledToFit()
+                        .cornerRadius(70)
+                    Image("p_5")
+                        .resizable()
                         .frame(width: 50, height: 50)
-                        .padding(.bottom)
-                    Rectangle()
-                        .fill(Color.gray)
+                        .scaledToFit()
+                        .cornerRadius(70)
+
+                    Image("p_6")
+                        .resizable()
                         .frame(width: 50, height: 50)
-                        .padding(.bottom)
-                    Rectangle()
-                        .fill(Color.gray)
-                        .frame(width: 50, height: 50)
-                        .padding(.bottom)
+                        .scaledToFit()
+                        .cornerRadius(70)
+
                 }//HStack for rectangles
             }//VStack
             .padding(.bottom, 130)
             
             VStack{
-                Text("The bottom bar for Your favorites")
+                Text("Placeholder bottom")
                     .font(.system(size: 40))
                 HStack{
-                    Rectangle()
-                        .fill(Color.gray)
+                    Image("p_1")
+                        .resizable()
                         .frame(width: 50, height: 50)
-                    Rectangle()
-                        .fill(Color.gray)
+                        .scaledToFit()
+                        .cornerRadius(70)
+
+                    Image("p_2")
+                        .resizable()
                         .frame(width: 50, height: 50)
-                    Rectangle()
-                        .fill(Color.gray)
+                        .scaledToFit()
+                        .cornerRadius(70)
+
+                    Image("p_3")
+                        .resizable()
                         .frame(width: 50, height: 50)
-                    Rectangle()
-                        .fill(Color.gray)
-                        .frame(width: 50, height: 50)
+                        .scaledToFit()
+                        .cornerRadius(70)
+
+
                 }//HStack for rectangles
             }//VStack
             Spacer()
