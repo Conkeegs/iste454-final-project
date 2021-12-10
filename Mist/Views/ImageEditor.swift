@@ -21,9 +21,10 @@ struct ImageEditor: View {
     @State private var imageSelectedAtLeastOnce = false
     @State private var imageSelected = false
     @State private var showingImageOptions = false
-    @State private var imageFilterName = "CIGaussianBlur"
-    @State private var imageFilterIntensity: CGFloat = 0
+//    @State private var imageFilterName = "CIGaussianBlur"
+//    @State private var imageFilterIntensity: CGFloat = 0
     @State private var showingSaveImageAlert = false
+    @StateObject var imageFilterValues = ImageFilterValues()
     
     //initial values of the variables relating to the watermark image
     @State private var showingWatermarkSelector = false
@@ -46,16 +47,16 @@ struct ImageEditor: View {
             //VStack to create all of the image editing UI
             VStack(alignment: .center, spacing: 20, content: {
                 //view for the image container and its plus button
-                ImageContainer(showingImageSelector: $showingImageSelector, imageData: $imageData, watermarkImageData: $watermarkImageData, watermarkSelected: $watermarkSelected, showingWatermarkOptions: $showingWatermarkOptions, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, imageMarchingAntsValue: $imageMarchingAntsValue, imageSelectedAtLeastOnce: $imageSelectedAtLeastOnce, imageSelected: $imageSelected, showingImageOptions: $showingImageOptions, imageFilterName: $imageFilterName, imageFilterIntensity: $imageFilterIntensity)
+                ImageContainer(showingImageSelector: $showingImageSelector, imageData: $imageData, watermarkImageData: $watermarkImageData, watermarkSelected: $watermarkSelected, showingWatermarkOptions: $showingWatermarkOptions, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, imageMarchingAntsValue: $imageMarchingAntsValue, imageSelectedAtLeastOnce: $imageSelectedAtLeastOnce, imageSelected: $imageSelected, showingImageOptions: $showingImageOptions, imageFilterValues: imageFilterValues)
                 
                 //view for the watermark container and its plus button
                 WatermarkContainer(showingWatermarkSelector: $showingWatermarkSelector, showingWatermarkImageSelector: $showingWatermarkImageSelector, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, showingWatermarkCharacterLimitAlert: $showingWatermarkCharacterLimitAlert, watermarkSelected: $watermarkSelected, watermarkMarchingAntsValue: $watermarkMarchingAntsValue, watermarkSelectedAtLeastOnce: $watermarkSelectedAtLeastOnce, showingWatermarkOptions: $showingWatermarkOptions, showingImageOptions: $showingImageOptions, imageSelected: $imageSelected)
                 
                 //options for editing image/watermark, depending on which one is selected
-                Options(showingImageOptions: $showingImageOptions, showingWatermarkOptions: $showingWatermarkOptions, imageFilterIntensity: $imageFilterIntensity)
+                Options(showingImageOptions: $showingImageOptions, showingWatermarkOptions: $showingWatermarkOptions, imageFilterValues: imageFilterValues)
                 
                 //This button can either say 'Apply' (to transform the image/watermark) or 'Save' to save the edited image to the user's camera roll (when
-                BottomButton(showingSaveImageAlert: $showingSaveImageAlert, imageData: $imageData, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, imageFilterName: $imageFilterName, imageFilterIntensity: $imageFilterIntensity, watermarkTextInput: $watermarkTextInput)
+                BottomButton(showingSaveImageAlert: $showingSaveImageAlert, imageData: $imageData, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, imageFilterValues: imageFilterValues)
                     
             }) //VStack
         }) //VStack
@@ -79,12 +80,11 @@ struct ImageContainer: View {
     @Binding var imageSelectedAtLeastOnce: Bool
     @Binding var imageSelected: Bool
     @Binding var showingImageOptions: Bool
-    //bindings for filter of image
-    @Binding var imageFilterName: String
-    @Binding var imageFilterIntensity: CGFloat
     
     //context for editing images
     let ciContext = CIContext(options: nil)
+    
+    @ObservedObject var imageFilterValues: ImageFilterValues
     
     var body: some View {
         //if the image selected is successfully created, display it. else, just display the image selector container (the bigger one with the 'plus' button)
@@ -93,7 +93,7 @@ struct ImageContainer: View {
                 //if watermark image data is not 0 (meaning it was selected), try and display it, but if text watermark is selected, display it. if both of those are false, simply display the main image without a watermark overlayed
                 if watermarkImageData.count != 0 {
                     if let uiKitWatermarkImage = UIImage(data: watermarkImageData) {
-                        Image(uiImage: FilteredImage.getImageWithWatermarkImage(uiKitMainImage, uiKitWatermarkImage, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.75), imageFilterName: imageFilterName, imageFilterIntensity: imageFilterIntensity, ciContext: ciContext))
+                        Image(uiImage: FilteredImage.getImageWithWatermarkImage(uiKitMainImage, uiKitWatermarkImage, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.75), imageFilterNames: imageFilterValues.imageFilterNames, ciContext: ciContext))
                             .resizable()
                             .frame(minWidth: 340, idealWidth: 340, maxWidth: 340, minHeight: 340, idealHeight: 340, maxHeight: 340, alignment: .center)
                             .aspectRatio(contentMode: .fill)
@@ -137,7 +137,7 @@ struct ImageContainer: View {
                             )
                     }
                 } else if (showingWatermarkTextInput) {
-                    Image(uiImage: FilteredImage.getImageWithWatermarkText(uiKitMainImage, watermarkTextInput, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.80), imageFilterName: imageFilterName, imageFilterIntensity: imageFilterIntensity, ciContext: ciContext))
+                    Image(uiImage: FilteredImage.getImageWithWatermarkText(uiKitMainImage, watermarkTextInput, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.80), imageFilterNames: imageFilterValues.imageFilterNames, ciContext: ciContext))
                         .resizable()
                         .frame(minWidth: 340, idealWidth: 340, maxWidth: 340, minHeight: 340, idealHeight: 340, maxHeight: 340, alignment: .center)
                         .aspectRatio(contentMode: .fill)
@@ -180,7 +180,7 @@ struct ImageContainer: View {
                                 .strokeBorder(Color.white, style: StrokeStyle(lineWidth: 4, dash: [10], dashPhase: imageMarchingAntsValue)): RoundedRectangle(cornerRadius: 20).strokeBorder(Color.white, style: StrokeStyle(lineWidth: 0, dash: [10], dashPhase: imageMarchingAntsValue))
                         )
                 } else {
-                    Image(uiImage: FilteredImage.getImage(uiKitMainImage, imageFilterName: imageFilterName, imageFilterIntensity: imageFilterIntensity, ciContext: ciContext))
+                    Image(uiImage: FilteredImage.getImage(uiKitMainImage, imageFilterNames: imageFilterValues.imageFilterNames, ciContext: ciContext, imageFilterValues: imageFilterValues))
                         .resizable()
                         .frame(minWidth: 340, idealWidth: 340, maxWidth: 340, minHeight: 340, idealHeight: 340, maxHeight: 340, alignment: .center)
                         .aspectRatio(contentMode: .fill)
@@ -253,8 +253,8 @@ struct ImageContainer: View {
 struct Options: View {
     @Binding var showingImageOptions: Bool
     @Binding var showingWatermarkOptions: Bool
-    //binding for slider intensity
-    @Binding var imageFilterIntensity: CGFloat
+    
+    @ObservedObject var imageFilterValues: ImageFilterValues
     
     var body: some View {
         VStack(alignment: .center, spacing: 20, content: {
@@ -266,7 +266,7 @@ struct Options: View {
                 
                 //this holds the actual options (filters etc) to select for the image/watermark
                 if showingImageOptions {
-                    ImageOptions()
+                    ImageOptions(imageFilterValues: imageFilterValues)
                         .frame(width: showingImageOptions ? 310 : 0, height: showingImageOptions ? 70 : 0)
                 } else if showingWatermarkOptions {
                     WatermarkOptions()
@@ -275,8 +275,32 @@ struct Options: View {
             })
             
             //this holds the slider or whatever tool is used to change the intensity of an option
-            Slider(value: $imageFilterIntensity, in: 0...10)
-                .frame(width: 340)
+            if (imageFilterValues.blurFilterSelected) {
+                Slider(value: $imageFilterValues.blurAmount, in: 0...10) { _ in
+                    imageFilterValues.imageFilterNames["CIGaussianBlur"] = imageFilterValues.blurAmount
+                }
+                    .frame(width: 340)
+            } else if (imageFilterValues.vignetteFilterSelected) {
+                Slider(value: $imageFilterValues.vignetteAmount, in: 0...1) { _ in
+                    imageFilterValues.imageFilterNames["CIVignette"] = imageFilterValues.vignetteAmount
+                }
+                    .frame(width: 340)
+            } else if (imageFilterValues.sepiaToneFilterSelected) {
+                Slider(value: $imageFilterValues.sepiaToneAmount, in: 0...1) { _ in
+                    imageFilterValues.imageFilterNames["CISepiaTone"] = imageFilterValues.sepiaToneAmount
+                }
+                    .frame(width: 340)
+            } else if (imageFilterValues.bloomFilterSelected) {
+                Slider(value: $imageFilterValues.bloomAmount, in: 0...1) { _ in
+                    imageFilterValues.imageFilterNames["CIBloom"] = imageFilterValues.bloomAmount
+                }
+                    .frame(width: 340)
+            } else if (imageFilterValues.hueFilterSelected) {
+                Slider(value: $imageFilterValues.hueAmount, in: 0...360) { _ in
+                    imageFilterValues.imageFilterNames["CIHueAdjust"] = imageFilterValues.hueAmount
+                }
+                    .frame(width: 340)
+            }
         }) //VStack
     } //body
 }
@@ -286,9 +310,9 @@ struct BottomButton: View {
     @Binding var imageData: Data
     @Binding var watermarkImageData: Data
     @Binding var showingWatermarkTextInput: Bool
-    @Binding var imageFilterName: String
-    @Binding var imageFilterIntensity: CGFloat
     @Binding var watermarkTextInput: String
+    
+    @ObservedObject var imageFilterValues: ImageFilterValues
     
     let ciContext = CIContext(options: nil)
     
@@ -297,12 +321,12 @@ struct BottomButton: View {
             if let uiKitMainImage = UIImage(data: imageData) {
                 if watermarkImageData.count != 0 {
                     if let uiKitWatermarkImage = UIImage(data: watermarkImageData) {
-                        ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImageWithWatermarkImage(uiKitMainImage, uiKitWatermarkImage, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.75), imageFilterName: imageFilterName, imageFilterIntensity: imageFilterIntensity, ciContext: ciContext))
+                        ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImageWithWatermarkImage(uiKitMainImage, uiKitWatermarkImage, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.75), imageFilterNames: imageFilterValues.imageFilterNames, ciContext: ciContext))
                     }
                 } else if (showingWatermarkTextInput) {
-                    ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImageWithWatermarkText(uiKitMainImage, watermarkTextInput, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.80), imageFilterName: imageFilterName, imageFilterIntensity: imageFilterIntensity, ciContext: ciContext))
+                    ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImageWithWatermarkText(uiKitMainImage, watermarkTextInput, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.80), imageFilterNames: imageFilterValues.imageFilterNames, ciContext: ciContext))
                 } else {
-                    ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImage(uiKitMainImage, imageFilterName: imageFilterName, imageFilterIntensity: imageFilterIntensity, ciContext: ciContext))
+                    ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImage(uiKitMainImage, imageFilterNames: imageFilterValues.imageFilterNames, ciContext: ciContext, imageFilterValues: imageFilterValues))
                 } 
             }
             
@@ -535,50 +559,131 @@ struct TopButtons: View {
 }
 
 struct ImageOptions: View {
+    @ObservedObject var imageFilterValues: ImageFilterValues
+    
     var body: some View {
         //filter options for the main image
         ScrollView(.horizontal, showsIndicators: false, content: {
             HStack(alignment: .center, spacing: 10, content: {
+                //blur button
                 Button(action: {
-                    //apply filter with intensity
-                    //toggle filter selected and edit background color
+                    imageFilterValues.vignetteFilterSelected = false
+                    imageFilterValues.sepiaToneFilterSelected = false
+                    imageFilterValues.bloomFilterSelected = false
+                    imageFilterValues.hueFilterSelected = false
+                    
+                    if imageFilterValues.imageFilterNames["CIGaussianBlur"] != nil {
+                        imageFilterValues.blurFilterSelected = false
+                        imageFilterValues.imageFilterNames.removeValue(forKey: "CIGaussianBlur")
+                    } else {
+                        imageFilterValues.blurFilterSelected = true
+                        imageFilterValues.imageFilterNames["CIGaussianBlur"] = imageFilterValues.blurAmount
+                    }
                 }, label: {
-                    Text("Filter1")
+                    Text("Blur")
                         .font(.custom("Fjalla One", size: 22))
                         .frame(width: 120, height: 50)
+                        .foregroundColor(imageFilterValues.blurFilterSelected ? Color.yellow : imageFilterValues.imageFilterNames["CIGaussianBlur"] != nil ? Color.white : Color.black)
                 }) //Button
-                    .foregroundColor(Color.white)
-                    .background(Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1))
+                    .foregroundColor(imageFilterValues.imageFilterNames["CIGaussianBlur"] != nil ? Color.white : Color.black)
+                    .background(imageFilterValues.imageFilterNames["CIGaussianBlur"] != nil ? Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1) : nil)
                     .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
                 
+                //vignette button
                 Button(action: {
-                    print("Filter 2")
+                    imageFilterValues.blurFilterSelected = false
+                    imageFilterValues.sepiaToneFilterSelected = false
+                    imageFilterValues.bloomFilterSelected = false
+                    imageFilterValues.hueFilterSelected = false
+                    
+                    if imageFilterValues.imageFilterNames["CIVignette"] != nil {
+                        imageFilterValues.vignetteFilterSelected = false
+                        imageFilterValues.imageFilterNames.removeValue(forKey: "CIVignette")
+                    } else {
+                        imageFilterValues.vignetteFilterSelected = true
+                        imageFilterValues.imageFilterNames["CIVignette"] = imageFilterValues.vignetteAmount
+                    }
                 }, label: {
-                    Text("Filter2")
+                    Text("Vignette")
                         .font(.custom("Fjalla One", size: 22))
                         .frame(width: 120, height: 50)
+                        .foregroundColor(imageFilterValues.vignetteFilterSelected ? Color.yellow : imageFilterValues.imageFilterNames["CIVignette"] != nil ? Color.white : Color.black)
                 }) //Button
-                    .foregroundColor(Color.black)
-                
-                Button(action: {
-                    print("Filter 3")
-                }, label: {
-                    Text("Filter3")
-                        .font(.custom("Fjalla One", size: 22))
-                        .frame(width: 120, height: 50)
-                }) //Button
-                    .foregroundColor(Color.white)
-                    .background(Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1))
+                    .foregroundColor(imageFilterValues.imageFilterNames["CIVignette"] != nil ? Color.white : Color.black)
+                    .background(imageFilterValues.imageFilterNames["CIVignette"] != nil ? Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1) : nil)
                     .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
                 
+                //sepiatone button
                 Button(action: {
-                    print("Filter 4")
+                    imageFilterValues.blurFilterSelected = false
+                    imageFilterValues.vignetteFilterSelected = false
+                    imageFilterValues.bloomFilterSelected = false
+                    imageFilterValues.hueFilterSelected = false
+                    
+                    if imageFilterValues.imageFilterNames["CISepiaTone"] != nil {
+                        imageFilterValues.sepiaToneFilterSelected = false
+                        imageFilterValues.imageFilterNames.removeValue(forKey: "CISepiaTone")
+                    } else {
+                        imageFilterValues.sepiaToneFilterSelected = true
+                        imageFilterValues.imageFilterNames["CISepiaTone"] = imageFilterValues.sepiaToneAmount
+                    }
                 }, label: {
-                    Text("Filter4")
+                    Text("Sepia")
                         .font(.custom("Fjalla One", size: 22))
                         .frame(width: 120, height: 50)
+                        .foregroundColor(imageFilterValues.sepiaToneFilterSelected ? Color.yellow : imageFilterValues.imageFilterNames["CISepiaTone"] != nil ? Color.white : Color.black)
                 }) //Button
-                    .foregroundColor(Color.black)
+                    .foregroundColor(imageFilterValues.imageFilterNames["CISepiaTone"] != nil ? Color.white : Color.black)
+                    .background(imageFilterValues.imageFilterNames["CISepiaTone"] != nil ? Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1) : nil)
+                    .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
+                
+                //bloom button
+                Button(action: {
+                    imageFilterValues.blurFilterSelected = false
+                    imageFilterValues.vignetteFilterSelected = false
+                    imageFilterValues.sepiaToneFilterSelected = false
+                    imageFilterValues.hueFilterSelected = false
+                    
+                    if imageFilterValues.imageFilterNames["CIBloom"] != nil {
+                        imageFilterValues.bloomFilterSelected = false
+                        imageFilterValues.imageFilterNames.removeValue(forKey: "CIBloom")
+                    } else {
+                        imageFilterValues.bloomFilterSelected = true
+                        imageFilterValues.imageFilterNames["CIBloom"] = imageFilterValues.bloomAmount
+                    }
+                }, label: {
+                    Text("Bloom")
+                        .font(.custom("Fjalla One", size: 22))
+                        .frame(width: 120, height: 50)
+                        .foregroundColor(imageFilterValues.bloomFilterSelected ? Color.yellow : imageFilterValues.imageFilterNames["CIBloom"] != nil ? Color.white : Color.black)
+                }) //Button
+                    .foregroundColor(imageFilterValues.imageFilterNames["CIBloom"] != nil ? Color.white : Color.black)
+                    .background(imageFilterValues.imageFilterNames["CIBloom"] != nil ? Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1) : nil)
+                    .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
+                
+                //hue button
+                Button(action: {
+                    imageFilterValues.blurFilterSelected = false
+                    imageFilterValues.vignetteFilterSelected = false
+                    imageFilterValues.sepiaToneFilterSelected = false
+                    imageFilterValues.bloomFilterSelected = false
+                    
+                    if imageFilterValues.imageFilterNames["CIHueAdjust"] != nil {
+                        imageFilterValues.hueFilterSelected = false
+                        imageFilterValues.imageFilterNames.removeValue(forKey: "CIHueAdjust")
+                    } else {
+                        imageFilterValues.hueFilterSelected = true
+                        imageFilterValues.imageFilterNames["CIHueAdjust"] = imageFilterValues.hueAmount
+                    }
+                }, label: {
+                    Text("Hue")
+                        .font(.custom("Fjalla One", size: 22))
+                        .frame(width: 120, height: 50)
+                        .foregroundColor(imageFilterValues.hueFilterSelected ? Color.yellow : imageFilterValues.imageFilterNames["CIHueAdjust"] != nil ? Color.white : Color.black)
+                }) //Button
+                    .foregroundColor(imageFilterValues.imageFilterNames["CIHueAdjust"] != nil ? Color.white : Color.black)
+                    .background(imageFilterValues.imageFilterNames["CIHueAdjust"] != nil ? Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1) : nil)
+                    .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
             })
         })
     }

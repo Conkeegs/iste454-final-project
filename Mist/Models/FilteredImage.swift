@@ -11,93 +11,104 @@ class FilteredImage {
     /**
         This function takes in the main image and the watermark image and layers the watermark image on top, then returns the edited image
      */
-    static func getImageWithWatermarkImage(_ mainImage: UIImage, _ waterMarkImage: UIImage, watermarkPosition: CGPoint, imageFilterName: String, imageFilterIntensity: CGFloat, ciContext: CIContext) -> UIImage {
-        let renderer = UIGraphicsImageRenderer(size: mainImage.size)
-        
-        let filter = CIFilter(name: imageFilterName)
-        let ciImageFromMainImage = CIImage(image: mainImage)
-        var modifiedMainImage: UIImage?
-        
-        if filter != nil {
-            filter!.setValue(ciImageFromMainImage, forKey: kCIInputImageKey)
-
-            switch imageFilterName {
-            case "CIGaussianBlur":
-                filter!.setValue(imageFilterIntensity, forKey: kCIInputRadiusKey)
-            default:
-                print("ERROR: Could not apply filer \(imageFilterName)")
-            }
-
-            if let filteredImage = filter!.outputImage {
-                if let cgImageFromOutputImage = ciContext.createCGImage(filteredImage, from: filteredImage.extent) {
-                    modifiedMainImage = UIImage(cgImage: cgImageFromOutputImage)
-                }
-            }
-        }
-        
-        return renderer.image { context in
-            modifiedMainImage != nil ? modifiedMainImage!.draw(in: CGRect(origin: CGPoint.zero, size: mainImage.size)) : mainImage.draw(in: CGRect(origin: CGPoint.zero, size: mainImage.size))
-            waterMarkImage.draw(in: CGRect(origin: watermarkPosition, size: CGSize(width: mainImage.size.width * 0.15, height: mainImage.size.width * 0.10)))
-        }
+    static func getImageWithWatermarkImage(_ mainImage: UIImage, _ waterMarkImage: UIImage, watermarkPosition: CGPoint, imageFilterNames: Dictionary<String, CGFloat>, ciContext: CIContext) -> UIImage {
+//        let renderer = UIGraphicsImageRenderer(size: mainImage.size)
+//
+//        let filter = CIFilter(name: imageFilterName)
+//        let ciImageFromMainImage = CIImage(image: mainImage)
+//        var modifiedMainImage: UIImage?
+//
+//        if filter != nil {
+//            filter!.setValue(ciImageFromMainImage, forKey: kCIInputImageKey)
+//
+//            switch imageFilterName {
+//            case "CIGaussianBlur":
+//                filter!.setValue(imageFilterIntensity, forKey: kCIInputRadiusKey)
+//            default:
+//                print("ERROR: Could not apply filer \(imageFilterName)")
+//            }
+//
+//            if let filteredImage = filter!.outputImage {
+//                if let cgImageFromOutputImage = ciContext.createCGImage(filteredImage, from: filteredImage.extent) {
+//                    modifiedMainImage = UIImage(cgImage: cgImageFromOutputImage)
+//                }
+//            }
+//        }
+//
+//        return renderer.image { context in
+//            modifiedMainImage != nil ? modifiedMainImage!.draw(in: CGRect(origin: CGPoint.zero, size: mainImage.size)) : mainImage.draw(in: CGRect(origin: CGPoint.zero, size: mainImage.size))
+//            waterMarkImage.draw(in: CGRect(origin: watermarkPosition, size: CGSize(width: mainImage.size.width * 0.15, height: mainImage.size.width * 0.10)))
+//        }
+        return UIImage()
     }
     
     /**
         This function takes in the main image and the watermark text and layers the watermark text on top, then returns the edited image
      */
-    static func getImageWithWatermarkText(_ mainImage: UIImage, _ watermarkText: String, watermarkPosition: CGPoint, imageFilterName: String, imageFilterIntensity: CGFloat, ciContext: CIContext) -> UIImage {
-        let renderer = UIGraphicsImageRenderer(size: mainImage.size)
-        let watermarkTextColor = UIColor.orange
-        let watermarkFont = UIFont(name: "Fjalla One", size: mainImage.size.width * 0.05)
-        let watermarkTextAttributes = [NSAttributedString.Key.font: watermarkFont, NSAttributedString.Key.foregroundColor: watermarkTextColor] as [NSAttributedString.Key: Any]
+    static func getImageWithWatermarkText(_ mainImage: UIImage, _ watermarkText: String, watermarkPosition: CGPoint, imageFilterNames: Dictionary<String, CGFloat>, ciContext: CIContext) -> UIImage {
+//        let renderer = UIGraphicsImageRenderer(size: mainImage.size)
+//        let watermarkTextColor = UIColor.orange
+//        let watermarkFont = UIFont(name: "Fjalla One", size: mainImage.size.width * 0.05)
+//        let watermarkTextAttributes = [NSAttributedString.Key.font: watermarkFont, NSAttributedString.Key.foregroundColor: watermarkTextColor] as [NSAttributedString.Key: Any]
+//
+//        let filter = CIFilter(name: imageFilterName)
+//        let ciImageFromMainImage = CIImage(image: mainImage)
+//        var modifiedMainImage: UIImage?
+//
+//        if filter != nil {
+//            filter!.setValue(ciImageFromMainImage, forKey: kCIInputImageKey)
+//
+//            switch imageFilterName {
+//            case "CIGaussianBlur":
+//                filter!.setValue(imageFilterIntensity, forKey: kCIInputRadiusKey)
+//            default:
+//                print("ERROR: Could not apply filer \(imageFilterName)")
+//            }
+//
+//            if let filteredImage = filter!.outputImage {
+//                if let cgImageFromOutputImage = ciContext.createCGImage(filteredImage, from: filteredImage.extent) {
+//                    modifiedMainImage = UIImage(cgImage: cgImageFromOutputImage)
+//                }
+//            }
+//        }
+//
+//        return renderer.image { context in
+//            modifiedMainImage != nil ? modifiedMainImage!.draw(in: CGRect(origin: CGPoint.zero, size: mainImage.size)) : mainImage.draw(in: CGRect(origin: CGPoint.zero, size: mainImage.size))
+//            watermarkText.draw(in: CGRect(origin: watermarkPosition, size: CGSize(width: mainImage.size.width, height: mainImage.size.height)), withAttributes: watermarkTextAttributes)
+//        }
         
-        let filter = CIFilter(name: imageFilterName)
-        let ciImageFromMainImage = CIImage(image: mainImage)
-        var modifiedMainImage: UIImage?
-        
-        if filter != nil {
-            filter!.setValue(ciImageFromMainImage, forKey: kCIInputImageKey)
-            
-            switch imageFilterName {
-            case "CIGaussianBlur":
-                filter!.setValue(imageFilterIntensity, forKey: kCIInputRadiusKey)
-            default:
-                print("ERROR: Could not apply filer \(imageFilterName)")
-            }
-        
-            if let filteredImage = filter!.outputImage {
-                if let cgImageFromOutputImage = ciContext.createCGImage(filteredImage, from: filteredImage.extent) {
-                    modifiedMainImage = UIImage(cgImage: cgImageFromOutputImage)
-                }
-            }
-        }
-        
-        return renderer.image { context in
-            modifiedMainImage != nil ? modifiedMainImage!.draw(in: CGRect(origin: CGPoint.zero, size: mainImage.size)) : mainImage.draw(in: CGRect(origin: CGPoint.zero, size: mainImage.size))
-            watermarkText.draw(in: CGRect(origin: watermarkPosition, size: CGSize(width: mainImage.size.width, height: mainImage.size.height)), withAttributes: watermarkTextAttributes)
-        }
+        return UIImage()
     }
     
     /**
         This function takes in the main image with no watermark and just returns it with possible filters applied
      */
-    static func getImage(_ mainImage: UIImage, imageFilterName: String, imageFilterIntensity: CGFloat, ciContext: CIContext) -> UIImage {
-        let filter = CIFilter(name: imageFilterName)
-        let ciImageFromMainImage = CIImage(image: mainImage)
+//    static func getImage(_ mainImage: UIImage, imageFilterName: String, imageFilterIntensity: CGFloat, ciContext: CIContext, imageFilterValues: ImageFilterValues) -> UIImage {
+    static func getImage(_ mainImage: UIImage, imageFilterNames: Dictionary<String, CGFloat>, ciContext: CIContext, imageFilterValues: ImageFilterValues) -> UIImage {
         var modifiedMainImage: UIImage?
         
-        if filter != nil {
-            filter!.setValue(ciImageFromMainImage, forKey: kCIInputImageKey)
+        for (filterName, filterIntensity) in imageFilterNames {
+            let filter = CIFilter(name: filterName)
+            let ciImageFromMainImage = CIImage(image: modifiedMainImage != nil ? modifiedMainImage! : mainImage)
             
-            switch imageFilterName {
-            case "CIGaussianBlur":
-                filter!.setValue(imageFilterIntensity, forKey: kCIInputRadiusKey)
-            default:
-                print("ERROR: Could not apply filer \(imageFilterName)")
-            }
-        
-            if let filteredImage = filter!.outputImage {
-                if let cgImageFromOutputImage = ciContext.createCGImage(filteredImage, from: filteredImage.extent) {
-                    modifiedMainImage = UIImage(cgImage: cgImageFromOutputImage)
+            if filter != nil {
+                filter!.setValue(ciImageFromMainImage, forKey: kCIInputImageKey)
+                
+                switch filterName {
+                case "CIGaussianBlur":
+                    filter!.setValue(filterIntensity, forKey: kCIInputRadiusKey)
+                case "CIVignette", "CISepiaTone", "CIBloom":
+                    filter!.setValue(filterIntensity, forKey: kCIInputIntensityKey)
+                case "CIHueAdjust":
+                    filter!.setValue(filterIntensity, forKey: kCIInputAngleKey)
+                default:
+                    print("ERROR: Could not apply filter \(filterName)")
+                }
+            
+                if let filteredImage = filter!.outputImage {
+                    if let cgImageFromOutputImage = ciContext.createCGImage(filteredImage, from: filteredImage.extent) {
+                        modifiedMainImage = UIImage(cgImage: cgImageFromOutputImage)
+                    }
                 }
             }
         }
