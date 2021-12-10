@@ -13,6 +13,13 @@
 		AB3FF58E2763127500970D4C /* ImageFilterValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3FF58D2763127500970D4C /* ImageFilterValues.swift */; };
 		AB3FF5902763441000970D4C /* WatermarkImageFilterValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3FF58F2763440F00970D4C /* WatermarkImageFilterValues.swift */; };
 		AB3FF5922763551100970D4C /* TextFilterValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3FF5912763551100970D4C /* TextFilterValues.swift */; };
+		AB3FF59427636FD200970D4C /* ImageContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3FF59327636FD200970D4C /* ImageContainer.swift */; };
+		AB3FF5962763701300970D4C /* Options.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3FF5952763701300970D4C /* Options.swift */; };
+		AB3FF5982763704B00970D4C /* BottomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3FF5972763704B00970D4C /* BottomButton.swift */; };
+		AB3FF59A2763707F00970D4C /* WatermarkContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3FF5992763707F00970D4C /* WatermarkContainer.swift */; };
+		AB3FF59C2763709900970D4C /* TopButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3FF59B2763709900970D4C /* TopButtons.swift */; };
+		AB3FF59E276370C800970D4C /* ImageOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3FF59D276370C800970D4C /* ImageOptions.swift */; };
+		AB3FF5A0276370E500970D4C /* WatermarkOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3FF59F276370E500970D4C /* WatermarkOptions.swift */; };
 		AB513B132750158B000B418E /* MistApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB513B122750158B000B418E /* MistApp.swift */; };
 		AB513B152750158B000B418E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB513B142750158B000B418E /* ContentView.swift */; };
 		AB513B172750158C000B418E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB513B162750158C000B418E /* Assets.xcassets */; };
@@ -30,6 +37,13 @@
 		AB3FF58D2763127500970D4C /* ImageFilterValues.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageFilterValues.swift; sourceTree = "<group>"; };
 		AB3FF58F2763440F00970D4C /* WatermarkImageFilterValues.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatermarkImageFilterValues.swift; sourceTree = "<group>"; };
 		AB3FF5912763551100970D4C /* TextFilterValues.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFilterValues.swift; sourceTree = "<group>"; };
+		AB3FF59327636FD200970D4C /* ImageContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageContainer.swift; sourceTree = "<group>"; };
+		AB3FF5952763701300970D4C /* Options.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Options.swift; sourceTree = "<group>"; };
+		AB3FF5972763704B00970D4C /* BottomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomButton.swift; sourceTree = "<group>"; };
+		AB3FF5992763707F00970D4C /* WatermarkContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatermarkContainer.swift; sourceTree = "<group>"; };
+		AB3FF59B2763709900970D4C /* TopButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopButtons.swift; sourceTree = "<group>"; };
+		AB3FF59D276370C800970D4C /* ImageOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageOptions.swift; sourceTree = "<group>"; };
+		AB3FF59F276370E500970D4C /* WatermarkOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatermarkOptions.swift; sourceTree = "<group>"; };
 		AB513B0F2750158B000B418E /* Mist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mist.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB513B122750158B000B418E /* MistApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MistApp.swift; sourceTree = "<group>"; };
 		AB513B142750158B000B418E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -61,6 +75,13 @@
 				AB513B2027501892000B418E /* ImageEditor.swift */,
 				AB513B142750158B000B418E /* ContentView.swift */,
 				5300D0ED2761E29E00E3254A /* YourTemplates.swift */,
+				AB3FF59327636FD200970D4C /* ImageContainer.swift */,
+				AB3FF5952763701300970D4C /* Options.swift */,
+				AB3FF5972763704B00970D4C /* BottomButton.swift */,
+				AB3FF5992763707F00970D4C /* WatermarkContainer.swift */,
+				AB3FF59B2763709900970D4C /* TopButtons.swift */,
+				AB3FF59D276370C800970D4C /* ImageOptions.swift */,
+				AB3FF59F276370E500970D4C /* WatermarkOptions.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -196,14 +217,21 @@
 			files = (
 				AB513B2127501892000B418E /* ImageEditor.swift in Sources */,
 				AB3FF5922763551100970D4C /* TextFilterValues.swift in Sources */,
+				AB3FF59E276370C800970D4C /* ImageOptions.swift in Sources */,
+				AB3FF5A0276370E500970D4C /* WatermarkOptions.swift in Sources */,
+				AB3FF5962763701300970D4C /* Options.swift in Sources */,
 				AB513B152750158B000B418E /* ContentView.swift in Sources */,
+				AB3FF59A2763707F00970D4C /* WatermarkContainer.swift in Sources */,
 				AB513B272751FF7D000B418E /* ImageSelector.swift in Sources */,
 				AB804B9C27547B9500267C47 /* WatermarkImageSelector.swift in Sources */,
+				AB3FF59427636FD200970D4C /* ImageContainer.swift in Sources */,
 				AB3FF58E2763127500970D4C /* ImageFilterValues.swift in Sources */,
 				AB513B132750158B000B418E /* MistApp.swift in Sources */,
 				5300D0EE2761E29E00E3254A /* YourTemplates.swift in Sources */,
 				AB3FF58A2762E21100970D4C /* FilteredImage.swift in Sources */,
 				AB3FF5902763441000970D4C /* WatermarkImageFilterValues.swift in Sources */,
+				AB3FF59C2763709900970D4C /* TopButtons.swift in Sources */,
+				AB3FF5982763704B00970D4C /* BottomButton.swift in Sources */,
 				AB3FF58C2762E86300970D4C /* ImageSaver.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
