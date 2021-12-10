@@ -21,8 +21,9 @@ struct ImageEditor: View {
     @State private var imageSelectedAtLeastOnce = false
     @State private var imageSelected = false
     @State private var showingImageOptions = false
-    @State private var imageFilterName = ""
+    @State private var imageFilterName = "CIGaussianBlur"
     @State private var imageFilterIntensity: CGFloat = 0
+    @State private var showingSaveImageAlert = false
     
     //initial values of the variables relating to the watermark image
     @State private var showingWatermarkSelector = false
@@ -51,10 +52,10 @@ struct ImageEditor: View {
                 WatermarkContainer(showingWatermarkSelector: $showingWatermarkSelector, showingWatermarkImageSelector: $showingWatermarkImageSelector, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, showingWatermarkCharacterLimitAlert: $showingWatermarkCharacterLimitAlert, watermarkSelected: $watermarkSelected, watermarkMarchingAntsValue: $watermarkMarchingAntsValue, watermarkSelectedAtLeastOnce: $watermarkSelectedAtLeastOnce, showingWatermarkOptions: $showingWatermarkOptions, showingImageOptions: $showingImageOptions, imageSelected: $imageSelected)
                 
                 //options for editing image/watermark, depending on which one is selected
-                Options(showingImageOptions: $showingImageOptions, showingWatermarkOptions: $showingWatermarkOptions)
+                Options(showingImageOptions: $showingImageOptions, showingWatermarkOptions: $showingWatermarkOptions, imageFilterIntensity: $imageFilterIntensity)
                 
                 //This button can either say 'Apply' (to transform the image/watermark) or 'Save' to save the edited image to the user's camera roll (when
-                BottomButton()
+                BottomButton(showingSaveImageAlert: $showingSaveImageAlert, imageData: $imageData, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, imageFilterName: $imageFilterName, imageFilterIntensity: $imageFilterIntensity, watermarkTextInput: $watermarkTextInput)
                     
             }) //VStack
         }) //VStack
@@ -85,57 +86,6 @@ struct ImageContainer: View {
     //context for editing images
     let ciContext = CIContext(options: nil)
     
-    /**
-        This function takes in the main image and the watermark image and layers the watermark image on top, then returns the edited image
-     */
-    func getImageWithWatermarkImage(_ mainImage: UIImage, _ waterMarkImage: UIImage, watermarkPosition: CGPoint) -> UIImage {
-        let renderer = UIGraphicsImageRenderer(size: mainImage.size)
-        
-        return renderer.image { context in
-            mainImage.draw(in: CGRect(origin: CGPoint.zero, size: mainImage.size))
-            waterMarkImage.draw(in: CGRect(origin: watermarkPosition, size: CGSize(width: mainImage.size.width * 0.15, height: mainImage.size.width * 0.10)))
-        }
-    }
-    
-    /**
-        This function takes in the main image and the watermark text and layers the watermark text on top, then returns the edited image
-     */
-    func getImageWithWatermarkText(_ mainImage: UIImage, _ watermarkText: String, watermarkPosition: CGPoint) -> UIImage {
-        let renderer = UIGraphicsImageRenderer(size: mainImage.size)
-        let watermarkTextColor = UIColor.orange
-        let watermarkFont = UIFont(name: "Fjalla One", size: mainImage.size.width * 0.05)
-        let watermarkTextAttributes = [NSAttributedString.Key.font: watermarkFont, NSAttributedString.Key.foregroundColor: watermarkTextColor] as [NSAttributedString.Key: Any]
-        
-        return renderer.image { context in
-            mainImage.draw(in: CGRect(origin: CGPoint.zero, size: mainImage.size))
-            watermarkText.draw(in: CGRect(origin: watermarkPosition, size: CGSize(width: mainImage.size.width, height: mainImage.size.height)), withAttributes: watermarkTextAttributes)
-        }
-    }
-    
-    /**
-        This function takes in the main image with no watermark and just returns it with possible filters applied
-     */
-    func getImage(_ mainImage: UIImage, imageFilterName: String, imageFilterIntensity: CGFloat) -> UIImage {
-        let filter = CIFilter(name: imageFilterName)
-        let ciImageFromMainImage = CIImage(image: mainImage)
-        
-        if filter != nil {
-            filter!.setValue(ciImageFromMainImage, forKey: kCIInputImageKey)
-            filter!.setValue(imageFilterIntensity, forKey: kCIInputIntensityKey)
-            
-            print("filtered")
-        
-            if let filteredImage = filter!.outputImage {
-                if let cgImageFromOutputImage = self.ciContext.createCGImage(filteredImage, from: filteredImage.extent) {
-                    return UIImage(cgImage: cgImageFromOutputImage)
-                }
-            }
-        }
-        
-        //if the above fails, return the image with no filters
-        return mainImage
-    }
-    
     var body: some View {
         //if the image selected is successfully created, display it. else, just display the image selector container (the bigger one with the 'plus' button)
         if let uiKitMainImage = UIImage(data: imageData) {
@@ -143,7 +93,7 @@ struct ImageContainer: View {
                 //if watermark image data is not 0 (meaning it was selected), try and display it, but if text watermark is selected, display it. if both of those are false, simply display the main image without a watermark overlayed
                 if watermarkImageData.count != 0 {
                     if let uiKitWatermarkImage = UIImage(data: watermarkImageData) {
-                        Image(uiImage: getImageWithWatermarkImage(uiKitMainImage, uiKitWatermarkImage, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.75)))
+                        Image(uiImage: FilteredImage.getImageWithWatermarkImage(uiKitMainImage, uiKitWatermarkImage, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.75), imageFilterName: imageFilterName, imageFilterIntensity: imageFilterIntensity, ciContext: ciContext))
                             .resizable()
                             .frame(minWidth: 340, idealWidth: 340, maxWidth: 340, minHeight: 340, idealHeight: 340, maxHeight: 340, alignment: .center)
                             .aspectRatio(contentMode: .fill)
@@ -187,7 +137,7 @@ struct ImageContainer: View {
                             )
                     }
                 } else if (showingWatermarkTextInput) {
-                    Image(uiImage: getImageWithWatermarkText(uiKitMainImage, watermarkTextInput, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.80)))
+                    Image(uiImage: FilteredImage.getImageWithWatermarkText(uiKitMainImage, watermarkTextInput, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.80), imageFilterName: imageFilterName, imageFilterIntensity: imageFilterIntensity, ciContext: ciContext))
                         .resizable()
                         .frame(minWidth: 340, idealWidth: 340, maxWidth: 340, minHeight: 340, idealHeight: 340, maxHeight: 340, alignment: .center)
                         .aspectRatio(contentMode: .fill)
@@ -230,7 +180,7 @@ struct ImageContainer: View {
                                 .strokeBorder(Color.white, style: StrokeStyle(lineWidth: 4, dash: [10], dashPhase: imageMarchingAntsValue)): RoundedRectangle(cornerRadius: 20).strokeBorder(Color.white, style: StrokeStyle(lineWidth: 0, dash: [10], dashPhase: imageMarchingAntsValue))
                         )
                 } else {
-                    Image(uiImage: getImage(uiKitMainImage, imageFilterName: imageFilterName, imageFilterIntensity: imageFilterIntensity))
+                    Image(uiImage: FilteredImage.getImage(uiKitMainImage, imageFilterName: imageFilterName, imageFilterIntensity: imageFilterIntensity, ciContext: ciContext))
                         .resizable()
                         .frame(minWidth: 340, idealWidth: 340, maxWidth: 340, minHeight: 340, idealHeight: 340, maxHeight: 340, alignment: .center)
                         .aspectRatio(contentMode: .fill)
@@ -303,6 +253,8 @@ struct ImageContainer: View {
 struct Options: View {
     @Binding var showingImageOptions: Bool
     @Binding var showingWatermarkOptions: Bool
+    //binding for slider intensity
+    @Binding var imageFilterIntensity: CGFloat
     
     var body: some View {
         VStack(alignment: .center, spacing: 20, content: {
@@ -323,18 +275,38 @@ struct Options: View {
             })
             
             //this holds the slider or whatever tool is used to change the intensity of an option
-//            Rectangle()
-//                .frame(width: 340, height: 50)
-//                .shadow(color: Color(.sRGB, red: 229 / 255, green: 229 / 255, blue: 229 / 255, opacity: 1), radius: 5, x: 0, y: 0)
-//                .foregroundColor(/*@START_MENU_TOKEN@*/.white/*@END_MENU_TOKEN@*/)
+            Slider(value: $imageFilterIntensity, in: 0...10)
+                .frame(width: 340)
         }) //VStack
     } //body
 }
 
 struct BottomButton: View {
+    @Binding var showingSaveImageAlert: Bool
+    @Binding var imageData: Data
+    @Binding var watermarkImageData: Data
+    @Binding var showingWatermarkTextInput: Bool
+    @Binding var imageFilterName: String
+    @Binding var imageFilterIntensity: CGFloat
+    @Binding var watermarkTextInput: String
+    
+    let ciContext = CIContext(options: nil)
+    
     var body: some View {
         Button(action: {
-            print("Hello world")
+            if let uiKitMainImage = UIImage(data: imageData) {
+                if watermarkImageData.count != 0 {
+                    if let uiKitWatermarkImage = UIImage(data: watermarkImageData) {
+                        ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImageWithWatermarkImage(uiKitMainImage, uiKitWatermarkImage, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.75), imageFilterName: imageFilterName, imageFilterIntensity: imageFilterIntensity, ciContext: ciContext))
+                    }
+                } else if (showingWatermarkTextInput) {
+                    ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImageWithWatermarkText(uiKitMainImage, watermarkTextInput, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.80), imageFilterName: imageFilterName, imageFilterIntensity: imageFilterIntensity, ciContext: ciContext))
+                } else {
+                    ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImage(uiKitMainImage, imageFilterName: imageFilterName, imageFilterIntensity: imageFilterIntensity, ciContext: ciContext))
+                } 
+            }
+            
+            showingSaveImageAlert = true
         }, label: {
             Text("MyButton")
                 .font(.custom("Fjalla One", size: 22))
@@ -343,6 +315,13 @@ struct BottomButton: View {
             .foregroundColor(Color.white)
             .background(Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1))
             .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
+            .alert(isPresented: $showingSaveImageAlert) {
+                if imageData.count != 0 {
+                    return Alert(title: Text("Success"), message: Text("Photo saved to camera roll."), dismissButton: .default(Text("Ok")))
+                } else {
+                    return Alert(title: Text("Warning"), message: Text("Please select an image before saving."), dismissButton: .destructive(Text("Dismiss")))
+                }
+            }
     } //body
 }
 
