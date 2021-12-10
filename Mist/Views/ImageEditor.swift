@@ -343,6 +343,16 @@ struct Options: View {
                         textFilterValues.textFilterNames["Obliqueness"] = textFilterValues.obliquenessAmount
                     }
                         .frame(width: 340)
+                } else if (textFilterValues.strokeSelected) {
+                    Slider(value: $textFilterValues.strokeAmount, in: 3...5) { _ in
+                        textFilterValues.textFilterNames["Stroke"] = textFilterValues.strokeAmount
+                    }
+                        .frame(width: 340)
+                } else if (textFilterValues.kernSelected) {
+                    Slider(value: $textFilterValues.kernAmount, in: 0...5) { _ in
+                        textFilterValues.textFilterNames["Kern"] = textFilterValues.kernAmount
+                    }
+                        .frame(width: 340)
                 }
             }
         }) //VStack
@@ -873,6 +883,9 @@ struct WatermarkOptions: View {
                 } else if watermarkType == "Text" {
                     //obliqueness button
                     Button(action: {
+                        textFilterValues.strokeSelected = false
+                        textFilterValues.kernSelected = false
+                        
                         if textFilterValues.textFilterNames["Obliqueness"] != nil {
                             textFilterValues.obliquenessSelected = false
                             textFilterValues.textFilterNames.removeValue(forKey: "Obliqueness")
@@ -890,23 +903,48 @@ struct WatermarkOptions: View {
                         .background(textFilterValues.textFilterNames["Obliqueness"] != nil ? Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1) : nil)
                         .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
                     
-                    //obliqueness button
+                    //stroke button
                     Button(action: {
-                        if textFilterValues.textFilterNames["Obliqueness"] != nil {
-                            textFilterValues.obliquenessSelected = false
-                            textFilterValues.textFilterNames.removeValue(forKey: "Obliqueness")
+                        textFilterValues.obliquenessSelected = false
+                        textFilterValues.kernSelected = false
+                        
+                        if textFilterValues.textFilterNames["Stroke"] != nil {
+                            textFilterValues.strokeSelected = false
+                            textFilterValues.textFilterNames.removeValue(forKey: "Stroke")
                         } else {
-                            textFilterValues.obliquenessSelected = true
-                            textFilterValues.textFilterNames["Obliqueness"] = textFilterValues.obliquenessAmount
+                            textFilterValues.strokeSelected = true
+                            textFilterValues.textFilterNames["Stroke"] = textFilterValues.strokeAmount
                         }
                     }, label: {
-                        Text("Obliqueness")
+                        Text("Stroke")
                             .font(.custom("Fjalla One", size: 22))
                             .frame(width: 120, height: 50)
-                            .foregroundColor(textFilterValues.obliquenessSelected ? Color.yellow : textFilterValues.textFilterNames["Obliqueness"] != nil ? Color.white : Color.black)
+                            .foregroundColor(textFilterValues.strokeSelected ? Color.yellow : textFilterValues.textFilterNames["Stroke"] != nil ? Color.white : Color.black)
                     }) //Button
-                        .foregroundColor(textFilterValues.textFilterNames["Obliqueness"] != nil ? Color.white : Color.black)
-                        .background(textFilterValues.textFilterNames["Obliqueness"] != nil ? Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1) : nil)
+                        .foregroundColor(textFilterValues.textFilterNames["Stroke"] != nil ? Color.white : Color.black)
+                        .background(textFilterValues.textFilterNames["Stroke"] != nil ? Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1) : nil)
+                        .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
+                    
+                    //kern button
+                    Button(action: {
+                        textFilterValues.obliquenessSelected = false
+                        textFilterValues.obliquenessSelected = false
+                        
+                        if textFilterValues.textFilterNames["Kern"] != nil {
+                            textFilterValues.kernSelected = false
+                            textFilterValues.textFilterNames.removeValue(forKey: "Kern")
+                        } else {
+                            textFilterValues.kernSelected = true
+                            textFilterValues.textFilterNames["Kern"] = textFilterValues.kernAmount
+                        }
+                    }, label: {
+                        Text("Kern")
+                            .font(.custom("Fjalla One", size: 22))
+                            .frame(width: 120, height: 50)
+                            .foregroundColor(textFilterValues.kernSelected ? Color.yellow : textFilterValues.textFilterNames["Kern"] != nil ? Color.white : Color.black)
+                    }) //Button
+                        .foregroundColor(textFilterValues.textFilterNames["Kern"] != nil ? Color.white : Color.black)
+                        .background(textFilterValues.textFilterNames["Kern"] != nil ? Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1) : nil)
                         .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
                 }
             })

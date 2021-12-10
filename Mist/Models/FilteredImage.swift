@@ -87,6 +87,10 @@ class FilteredImage {
             switch filterName {
             case "Obliqueness":
                 watermarkTextAttributes[NSAttributedString.Key.obliqueness] = NSNumber(value: filterIntensity as! Float)
+            case "Stroke":
+                watermarkTextAttributes[NSAttributedString.Key.strokeWidth] = NSNumber(value: filterIntensity as! Float)
+            case "Kern":
+                watermarkTextAttributes[NSAttributedString.Key.kern] = NSNumber(value: filterIntensity as! Float)
             default:
                 print("ERROR: Could not apply filter \(filterName)")
             }
