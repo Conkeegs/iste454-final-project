@@ -21,8 +21,6 @@ struct ImageEditor: View {
     @State private var imageSelectedAtLeastOnce = false
     @State private var imageSelected = false
     @State private var showingImageOptions = false
-//    @State private var imageFilterName = "CIGaussianBlur"
-//    @State private var imageFilterIntensity: CGFloat = 0
     @State private var showingSaveImageAlert = false
     @StateObject var imageFilterValues = ImageFilterValues()
     
@@ -37,6 +35,9 @@ struct ImageEditor: View {
     @State private var watermarkSelected = false
     @State private var watermarkMarchingAntsValue: CGFloat = 0
     @State private var watermarkSelectedAtLeastOnce = false
+    @StateObject var watermarkImageFilterValues = WatermarkImageFilterValues()
+    @State private var watermarkType = ""
+    @StateObject var textFilterValues = TextFilterValues()
     
     var body: some View {
         //vstack to align 'DoneButton' properly
@@ -47,16 +48,16 @@ struct ImageEditor: View {
             //VStack to create all of the image editing UI
             VStack(alignment: .center, spacing: 20, content: {
                 //view for the image container and its plus button
-                ImageContainer(showingImageSelector: $showingImageSelector, imageData: $imageData, watermarkImageData: $watermarkImageData, watermarkSelected: $watermarkSelected, showingWatermarkOptions: $showingWatermarkOptions, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, imageMarchingAntsValue: $imageMarchingAntsValue, imageSelectedAtLeastOnce: $imageSelectedAtLeastOnce, imageSelected: $imageSelected, showingImageOptions: $showingImageOptions, imageFilterValues: imageFilterValues)
+                ImageContainer(showingImageSelector: $showingImageSelector, imageData: $imageData, watermarkImageData: $watermarkImageData, watermarkSelected: $watermarkSelected, showingWatermarkOptions: $showingWatermarkOptions, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, imageMarchingAntsValue: $imageMarchingAntsValue, imageSelectedAtLeastOnce: $imageSelectedAtLeastOnce, imageSelected: $imageSelected, showingImageOptions: $showingImageOptions, imageFilterValues: imageFilterValues, watermarkImageFilterValues: watermarkImageFilterValues, textFilterValues: textFilterValues)
                 
                 //view for the watermark container and its plus button
-                WatermarkContainer(showingWatermarkSelector: $showingWatermarkSelector, showingWatermarkImageSelector: $showingWatermarkImageSelector, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, showingWatermarkCharacterLimitAlert: $showingWatermarkCharacterLimitAlert, watermarkSelected: $watermarkSelected, watermarkMarchingAntsValue: $watermarkMarchingAntsValue, watermarkSelectedAtLeastOnce: $watermarkSelectedAtLeastOnce, showingWatermarkOptions: $showingWatermarkOptions, showingImageOptions: $showingImageOptions, imageSelected: $imageSelected)
+                WatermarkContainer(showingWatermarkSelector: $showingWatermarkSelector, showingWatermarkImageSelector: $showingWatermarkImageSelector, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, showingWatermarkCharacterLimitAlert: $showingWatermarkCharacterLimitAlert, watermarkSelected: $watermarkSelected, watermarkMarchingAntsValue: $watermarkMarchingAntsValue, watermarkSelectedAtLeastOnce: $watermarkSelectedAtLeastOnce, showingWatermarkOptions: $showingWatermarkOptions, watermarkType: $watermarkType, showingImageOptions: $showingImageOptions, imageSelected: $imageSelected)
                 
                 //options for editing image/watermark, depending on which one is selected
-                Options(showingImageOptions: $showingImageOptions, showingWatermarkOptions: $showingWatermarkOptions, imageFilterValues: imageFilterValues)
+                Options(showingImageOptions: $showingImageOptions, showingWatermarkOptions: $showingWatermarkOptions, imageSelected: $imageSelected, watermarkSelected: $watermarkSelected, watermarkType: $watermarkType, imageFilterValues: imageFilterValues, watermarkImageFilterValues: watermarkImageFilterValues, textFilterValues: textFilterValues)
                 
                 //This button can either say 'Apply' (to transform the image/watermark) or 'Save' to save the edited image to the user's camera roll (when
-                BottomButton(showingSaveImageAlert: $showingSaveImageAlert, imageData: $imageData, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, imageFilterValues: imageFilterValues)
+                BottomButton(showingSaveImageAlert: $showingSaveImageAlert, imageData: $imageData, watermarkImageData: $watermarkImageData, showingWatermarkTextInput: $showingWatermarkTextInput, watermarkTextInput: $watermarkTextInput, imageFilterValues: imageFilterValues, watermarkImageFilterValues: watermarkImageFilterValues, textFilterValues: textFilterValues)
                     
             }) //VStack
         }) //VStack
@@ -85,6 +86,8 @@ struct ImageContainer: View {
     let ciContext = CIContext(options: nil)
     
     @ObservedObject var imageFilterValues: ImageFilterValues
+    @ObservedObject var watermarkImageFilterValues: WatermarkImageFilterValues
+    @ObservedObject var textFilterValues: TextFilterValues
     
     var body: some View {
         //if the image selected is successfully created, display it. else, just display the image selector container (the bigger one with the 'plus' button)
@@ -93,7 +96,7 @@ struct ImageContainer: View {
                 //if watermark image data is not 0 (meaning it was selected), try and display it, but if text watermark is selected, display it. if both of those are false, simply display the main image without a watermark overlayed
                 if watermarkImageData.count != 0 {
                     if let uiKitWatermarkImage = UIImage(data: watermarkImageData) {
-                        Image(uiImage: FilteredImage.getImageWithWatermarkImage(uiKitMainImage, uiKitWatermarkImage, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.75), imageFilterNames: imageFilterValues.imageFilterNames, ciContext: ciContext))
+                        Image(uiImage: FilteredImage.getImageWithWatermarkImage(uiKitMainImage, uiKitWatermarkImage, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.75), imageFilterNames: imageFilterValues.imageFilterNames, watermarkImageFilterNames: watermarkImageFilterValues.watermarkImageFilterNames, ciContext: ciContext))
                             .resizable()
                             .frame(minWidth: 340, idealWidth: 340, maxWidth: 340, minHeight: 340, idealHeight: 340, maxHeight: 340, alignment: .center)
                             .aspectRatio(contentMode: .fill)
@@ -137,7 +140,7 @@ struct ImageContainer: View {
                             )
                     }
                 } else if (showingWatermarkTextInput) {
-                    Image(uiImage: FilteredImage.getImageWithWatermarkText(uiKitMainImage, watermarkTextInput, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.80), imageFilterNames: imageFilterValues.imageFilterNames, ciContext: ciContext))
+                    Image(uiImage: FilteredImage.getImageWithWatermarkText(uiKitMainImage, watermarkTextInput, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.80), imageFilterNames: imageFilterValues.imageFilterNames, textFilterNames: textFilterValues.textFilterNames, ciContext: ciContext))
                         .resizable()
                         .frame(minWidth: 340, idealWidth: 340, maxWidth: 340, minHeight: 340, idealHeight: 340, maxHeight: 340, alignment: .center)
                         .aspectRatio(contentMode: .fill)
@@ -253,8 +256,13 @@ struct ImageContainer: View {
 struct Options: View {
     @Binding var showingImageOptions: Bool
     @Binding var showingWatermarkOptions: Bool
+    @Binding var imageSelected: Bool
+    @Binding var watermarkSelected: Bool
+    @Binding var watermarkType: String
     
     @ObservedObject var imageFilterValues: ImageFilterValues
+    @ObservedObject var watermarkImageFilterValues: WatermarkImageFilterValues
+    @ObservedObject var textFilterValues: TextFilterValues
     
     var body: some View {
         VStack(alignment: .center, spacing: 20, content: {
@@ -269,37 +277,73 @@ struct Options: View {
                     ImageOptions(imageFilterValues: imageFilterValues)
                         .frame(width: showingImageOptions ? 310 : 0, height: showingImageOptions ? 70 : 0)
                 } else if showingWatermarkOptions {
-                    WatermarkOptions()
+                    WatermarkOptions(imageSelected: $imageSelected, watermarkSelected: $watermarkSelected, watermarkType: $watermarkType, watermarkImageFilterValues: watermarkImageFilterValues, textFilterValues: textFilterValues)
                         .frame(width: showingWatermarkOptions ? 310 : 0, height: showingWatermarkOptions ? 70 : 0)
                 }
             })
             
             //this holds the slider or whatever tool is used to change the intensity of an option
-            if (imageFilterValues.blurFilterSelected) {
-                Slider(value: $imageFilterValues.blurAmount, in: 0...10) { _ in
-                    imageFilterValues.imageFilterNames["CIGaussianBlur"] = imageFilterValues.blurAmount
+            if showingImageOptions {
+                if (imageFilterValues.blurFilterSelected) {
+                    Slider(value: $imageFilterValues.blurAmount, in: 0...10) { _ in
+                        imageFilterValues.imageFilterNames["CIGaussianBlur"] = imageFilterValues.blurAmount
+                    }
+                        .frame(width: 340)
+                } else if (imageFilterValues.vignetteFilterSelected) {
+                    Slider(value: $imageFilterValues.vignetteAmount, in: 0...1) { _ in
+                        imageFilterValues.imageFilterNames["CIVignette"] = imageFilterValues.vignetteAmount
+                    }
+                        .frame(width: 340)
+                } else if (imageFilterValues.sepiaToneFilterSelected) {
+                    Slider(value: $imageFilterValues.sepiaToneAmount, in: 0...1) { _ in
+                        imageFilterValues.imageFilterNames["CISepiaTone"] = imageFilterValues.sepiaToneAmount
+                    }
+                        .frame(width: 340)
+                } else if (imageFilterValues.bloomFilterSelected) {
+                    Slider(value: $imageFilterValues.bloomAmount, in: 0...1) { _ in
+                        imageFilterValues.imageFilterNames["CIBloom"] = imageFilterValues.bloomAmount
+                    }
+                        .frame(width: 340)
+                } else if (imageFilterValues.hueFilterSelected) {
+                    Slider(value: $imageFilterValues.hueAmount, in: 0...360) { _ in
+                        imageFilterValues.imageFilterNames["CIHueAdjust"] = imageFilterValues.hueAmount
+                    }
+                        .frame(width: 340)
                 }
-                    .frame(width: 340)
-            } else if (imageFilterValues.vignetteFilterSelected) {
-                Slider(value: $imageFilterValues.vignetteAmount, in: 0...1) { _ in
-                    imageFilterValues.imageFilterNames["CIVignette"] = imageFilterValues.vignetteAmount
+            } else if showingWatermarkOptions && watermarkType == "Image" {
+                if (watermarkImageFilterValues.blurFilterSelected) {
+                    Slider(value: $watermarkImageFilterValues.blurAmount, in: 0...10) { _ in
+                        watermarkImageFilterValues.watermarkImageFilterNames["CIGaussianBlur"] = watermarkImageFilterValues.blurAmount
+                    }
+                        .frame(width: 340)
+                } else if (watermarkImageFilterValues.vignetteFilterSelected) {
+                    Slider(value: $watermarkImageFilterValues.vignetteAmount, in: 0...1) { _ in
+                        watermarkImageFilterValues.watermarkImageFilterNames["CIVignette"] = watermarkImageFilterValues.vignetteAmount
+                    }
+                        .frame(width: 340)
+                } else if (watermarkImageFilterValues.sepiaToneFilterSelected) {
+                    Slider(value: $watermarkImageFilterValues.sepiaToneAmount, in: 0...1) { _ in
+                        watermarkImageFilterValues.watermarkImageFilterNames["CISepiaTone"] = watermarkImageFilterValues.sepiaToneAmount
+                    }
+                        .frame(width: 340)
+                } else if (watermarkImageFilterValues.bloomFilterSelected) {
+                    Slider(value: $watermarkImageFilterValues.bloomAmount, in: 0...1) { _ in
+                        watermarkImageFilterValues.watermarkImageFilterNames["CIBloom"] = watermarkImageFilterValues.bloomAmount
+                    }
+                        .frame(width: 340)
+                } else if (watermarkImageFilterValues.hueFilterSelected) {
+                    Slider(value: $watermarkImageFilterValues.hueAmount, in: 0...360) { _ in
+                        watermarkImageFilterValues.watermarkImageFilterNames["CIHueAdjust"] = watermarkImageFilterValues.hueAmount
+                    }
+                        .frame(width: 340)
                 }
-                    .frame(width: 340)
-            } else if (imageFilterValues.sepiaToneFilterSelected) {
-                Slider(value: $imageFilterValues.sepiaToneAmount, in: 0...1) { _ in
-                    imageFilterValues.imageFilterNames["CISepiaTone"] = imageFilterValues.sepiaToneAmount
+            } else if showingWatermarkOptions && watermarkType == "Text" {
+                if (textFilterValues.obliquenessSelected) {
+                    Slider(value: $textFilterValues.obliquenessAmount, in: 0...1) { _ in
+                        textFilterValues.textFilterNames["Obliqueness"] = textFilterValues.obliquenessAmount
+                    }
+                        .frame(width: 340)
                 }
-                    .frame(width: 340)
-            } else if (imageFilterValues.bloomFilterSelected) {
-                Slider(value: $imageFilterValues.bloomAmount, in: 0...1) { _ in
-                    imageFilterValues.imageFilterNames["CIBloom"] = imageFilterValues.bloomAmount
-                }
-                    .frame(width: 340)
-            } else if (imageFilterValues.hueFilterSelected) {
-                Slider(value: $imageFilterValues.hueAmount, in: 0...360) { _ in
-                    imageFilterValues.imageFilterNames["CIHueAdjust"] = imageFilterValues.hueAmount
-                }
-                    .frame(width: 340)
             }
         }) //VStack
     } //body
@@ -313,6 +357,8 @@ struct BottomButton: View {
     @Binding var watermarkTextInput: String
     
     @ObservedObject var imageFilterValues: ImageFilterValues
+    @ObservedObject var watermarkImageFilterValues: WatermarkImageFilterValues
+    @ObservedObject var textFilterValues: TextFilterValues
     
     let ciContext = CIContext(options: nil)
     
@@ -321,10 +367,10 @@ struct BottomButton: View {
             if let uiKitMainImage = UIImage(data: imageData) {
                 if watermarkImageData.count != 0 {
                     if let uiKitWatermarkImage = UIImage(data: watermarkImageData) {
-                        ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImageWithWatermarkImage(uiKitMainImage, uiKitWatermarkImage, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.75), imageFilterNames: imageFilterValues.imageFilterNames, ciContext: ciContext))
+                        ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImageWithWatermarkImage(uiKitMainImage, uiKitWatermarkImage, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.75), imageFilterNames: imageFilterValues.imageFilterNames, watermarkImageFilterNames: watermarkImageFilterValues.watermarkImageFilterNames, ciContext: ciContext))
                     }
                 } else if (showingWatermarkTextInput) {
-                    ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImageWithWatermarkText(uiKitMainImage, watermarkTextInput, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.80), imageFilterNames: imageFilterValues.imageFilterNames, ciContext: ciContext))
+                    ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImageWithWatermarkText(uiKitMainImage, watermarkTextInput, watermarkPosition: CGPoint(x: uiKitMainImage.size.width * 0.10, y: uiKitMainImage.size.height * 0.80), imageFilterNames: imageFilterValues.imageFilterNames, textFilterNames: textFilterValues.textFilterNames, ciContext: ciContext))
                 } else {
                     ImageSaver.writeToPhotoAlbum(image: FilteredImage.getImage(uiKitMainImage, imageFilterNames: imageFilterValues.imageFilterNames, ciContext: ciContext, imageFilterValues: imageFilterValues))
                 } 
@@ -361,6 +407,7 @@ struct WatermarkContainer: View {
     @Binding var watermarkMarchingAntsValue: CGFloat
     @Binding var watermarkSelectedAtLeastOnce: Bool
     @Binding var showingWatermarkOptions: Bool
+    @Binding var watermarkType: String
     
     @Binding var showingImageOptions: Bool
     @Binding var imageSelected: Bool
@@ -496,6 +543,7 @@ struct WatermarkContainer: View {
                         //button for going with an image watermark
                         Button(action: {
                             showingWatermarkImageSelector.toggle()
+                            watermarkType = "Image"
                         }, label: {
                             Text("Image")
                                 .font(.custom("Fjalla One", size: 22))
@@ -511,6 +559,7 @@ struct WatermarkContainer: View {
                         //button for going with a text watermark
                         Button(action: {
                             showingWatermarkTextInput.toggle()
+                            watermarkType = "Text"
                         }, label: {
                             Text("Text")
                                 .font(.custom("Fjalla One", size: 22))
@@ -690,49 +739,176 @@ struct ImageOptions: View {
 }
 
 struct WatermarkOptions: View {
+    @Binding var imageSelected: Bool
+    @Binding var watermarkSelected: Bool
+    @Binding var watermarkType: String
+    
+    @ObservedObject var watermarkImageFilterValues: WatermarkImageFilterValues
+    @ObservedObject var textFilterValues: TextFilterValues
+    
     var body: some View {
         //filter/text options for the watermark that is chosen
         ScrollView(.horizontal, showsIndicators: false, content: {
             HStack(alignment: .center, spacing: 10, content: {
-                Button(action: {
-                    print("Color 1")
-                }, label: {
-                    Text("Color1")
-                        .font(.custom("Fjalla One", size: 22))
-                        .frame(width: 120, height: 50)
-                }) //Button
-                    .foregroundColor(Color.white)
-                    .background(Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1))
-                    .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
-                
-                Button(action: {
-                    print("Color 2")
-                }, label: {
-                    Text("Color2")
-                        .font(.custom("Fjalla One", size: 22))
-                        .frame(width: 120, height: 50)
-                }) //Button
-                    .foregroundColor(Color.black)
-                
-                Button(action: {
-                    print("Color 3")
-                }, label: {
-                    Text("Color3")
-                        .font(.custom("Fjalla One", size: 22))
-                        .frame(width: 120, height: 50)
-                }) //Button
-                    .foregroundColor(Color.white)
-                    .background(Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1))
-                    .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
-                
-                Button(action: {
-                    print("Color 4")
-                }, label: {
-                    Text("Color4")
-                        .font(.custom("Fjalla One", size: 22))
-                        .frame(width: 120, height: 50)
-                }) //Button
-                    .foregroundColor(Color.black)
+                if watermarkType == "Image" {
+                    //blur button
+                    Button(action: {
+                        watermarkImageFilterValues.vignetteFilterSelected = false
+                        watermarkImageFilterValues.sepiaToneFilterSelected = false
+                        watermarkImageFilterValues.bloomFilterSelected = false
+                        watermarkImageFilterValues.hueFilterSelected = false
+                        
+                        if watermarkImageFilterValues.watermarkImageFilterNames["CIGaussianBlur"] != nil {
+                            watermarkImageFilterValues.blurFilterSelected = false
+                            watermarkImageFilterValues.watermarkImageFilterNames.removeValue(forKey: "CIGaussianBlur")
+                        } else {
+                            watermarkImageFilterValues.blurFilterSelected = true
+                            watermarkImageFilterValues.watermarkImageFilterNames["CIGaussianBlur"] = watermarkImageFilterValues.blurAmount
+                        }
+                    }, label: {
+                        Text("Blur")
+                            .font(.custom("Fjalla One", size: 22))
+                            .frame(width: 120, height: 50)
+                            .foregroundColor(watermarkImageFilterValues.blurFilterSelected ? Color.yellow : watermarkImageFilterValues.watermarkImageFilterNames["CIGaussianBlur"] != nil ? Color.white : Color.black)
+                    }) //Button
+                        .foregroundColor(watermarkImageFilterValues.watermarkImageFilterNames["CIGaussianBlur"] != nil ? Color.white : Color.black)
+                        .background(watermarkImageFilterValues.watermarkImageFilterNames["CIGaussianBlur"] != nil ? Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1) : nil)
+                        .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
+                    
+                    //vignette button
+                    Button(action: {
+                        watermarkImageFilterValues.blurFilterSelected = false
+                        watermarkImageFilterValues.sepiaToneFilterSelected = false
+                        watermarkImageFilterValues.bloomFilterSelected = false
+                        watermarkImageFilterValues.hueFilterSelected = false
+                        
+                        if watermarkImageFilterValues.watermarkImageFilterNames["CIVignette"] != nil {
+                            watermarkImageFilterValues.vignetteFilterSelected = false
+                            watermarkImageFilterValues.watermarkImageFilterNames.removeValue(forKey: "CIVignette")
+                        } else {
+                            watermarkImageFilterValues.vignetteFilterSelected = true
+                            watermarkImageFilterValues.watermarkImageFilterNames["CIVignette"] = watermarkImageFilterValues.vignetteAmount
+                        }
+                    }, label: {
+                        Text("Vignette")
+                            .font(.custom("Fjalla One", size: 22))
+                            .frame(width: 120, height: 50)
+                            .foregroundColor(watermarkImageFilterValues.vignetteFilterSelected ? Color.yellow : watermarkImageFilterValues.watermarkImageFilterNames["CIVignette"] != nil ? Color.white : Color.black)
+                    }) //Button
+                        .foregroundColor(watermarkImageFilterValues.watermarkImageFilterNames["CIVignette"] != nil ? Color.white : Color.black)
+                        .background(watermarkImageFilterValues.watermarkImageFilterNames["CIVignette"] != nil ? Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1) : nil)
+                        .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
+                    
+                    //sepiatone button
+                    Button(action: {
+                        watermarkImageFilterValues.blurFilterSelected = false
+                        watermarkImageFilterValues.vignetteFilterSelected = false
+                        watermarkImageFilterValues.bloomFilterSelected = false
+                        watermarkImageFilterValues.hueFilterSelected = false
+                        
+                        if watermarkImageFilterValues.watermarkImageFilterNames["CISepiaTone"] != nil {
+                            watermarkImageFilterValues.sepiaToneFilterSelected = false
+                            watermarkImageFilterValues.watermarkImageFilterNames.removeValue(forKey: "CISepiaTone")
+                        } else {
+                            watermarkImageFilterValues.sepiaToneFilterSelected = true
+                            watermarkImageFilterValues.watermarkImageFilterNames["CISepiaTone"] = watermarkImageFilterValues.sepiaToneAmount
+                        }
+                    }, label: {
+                        Text("Sepia")
+                            .font(.custom("Fjalla One", size: 22))
+                            .frame(width: 120, height: 50)
+                            .foregroundColor(watermarkImageFilterValues.sepiaToneFilterSelected ? Color.yellow : watermarkImageFilterValues.watermarkImageFilterNames["CISepiaTone"] != nil ? Color.white : Color.black)
+                    }) //Button
+                        .foregroundColor(watermarkImageFilterValues.watermarkImageFilterNames["CISepiaTone"] != nil ? Color.white : Color.black)
+                        .background(watermarkImageFilterValues.watermarkImageFilterNames["CISepiaTone"] != nil ? Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1) : nil)
+                        .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
+                    
+                    //bloom button
+                    Button(action: {
+                        watermarkImageFilterValues.blurFilterSelected = false
+                        watermarkImageFilterValues.vignetteFilterSelected = false
+                        watermarkImageFilterValues.sepiaToneFilterSelected = false
+                        watermarkImageFilterValues.hueFilterSelected = false
+                        
+                        if watermarkImageFilterValues.watermarkImageFilterNames["CIBloom"] != nil {
+                            watermarkImageFilterValues.bloomFilterSelected = false
+                            watermarkImageFilterValues.watermarkImageFilterNames.removeValue(forKey: "CIBloom")
+                        } else {
+                            watermarkImageFilterValues.bloomFilterSelected = true
+                            watermarkImageFilterValues.watermarkImageFilterNames["CIBloom"] = watermarkImageFilterValues.bloomAmount
+                        }
+                    }, label: {
+                        Text("Bloom")
+                            .font(.custom("Fjalla One", size: 22))
+                            .frame(width: 120, height: 50)
+                            .foregroundColor(watermarkImageFilterValues.bloomFilterSelected ? Color.yellow : watermarkImageFilterValues.watermarkImageFilterNames["CIBloom"] != nil ? Color.white : Color.black)
+                    }) //Button
+                        .foregroundColor(watermarkImageFilterValues.watermarkImageFilterNames["CIBloom"] != nil ? Color.white : Color.black)
+                        .background(watermarkImageFilterValues.watermarkImageFilterNames["CIBloom"] != nil ? Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1) : nil)
+                        .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
+                    
+                    //hue button
+                    Button(action: {
+                        watermarkImageFilterValues.blurFilterSelected = false
+                        watermarkImageFilterValues.vignetteFilterSelected = false
+                        watermarkImageFilterValues.sepiaToneFilterSelected = false
+                        watermarkImageFilterValues.bloomFilterSelected = false
+                        
+                        if watermarkImageFilterValues.watermarkImageFilterNames["CIHueAdjust"] != nil {
+                            watermarkImageFilterValues.hueFilterSelected = false
+                            watermarkImageFilterValues.watermarkImageFilterNames.removeValue(forKey: "CIHueAdjust")
+                        } else {
+                            watermarkImageFilterValues.hueFilterSelected = true
+                            watermarkImageFilterValues.watermarkImageFilterNames["CIHueAdjust"] = watermarkImageFilterValues.hueAmount
+                        }
+                    }, label: {
+                        Text("Hue")
+                            .font(.custom("Fjalla One", size: 22))
+                            .frame(width: 120, height: 50)
+                            .foregroundColor(watermarkImageFilterValues.hueFilterSelected ? Color.yellow : watermarkImageFilterValues.watermarkImageFilterNames["CIHueAdjust"] != nil ? Color.white : Color.black)
+                    }) //Button
+                        .foregroundColor(watermarkImageFilterValues.watermarkImageFilterNames["CIHueAdjust"] != nil ? Color.white : Color.black)
+                        .background(watermarkImageFilterValues.watermarkImageFilterNames["CIHueAdjust"] != nil ? Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1) : nil)
+                        .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
+                } else if watermarkType == "Text" {
+                    //obliqueness button
+                    Button(action: {
+                        if textFilterValues.textFilterNames["Obliqueness"] != nil {
+                            textFilterValues.obliquenessSelected = false
+                            textFilterValues.textFilterNames.removeValue(forKey: "Obliqueness")
+                        } else {
+                            textFilterValues.obliquenessSelected = true
+                            textFilterValues.textFilterNames["Obliqueness"] = textFilterValues.obliquenessAmount
+                        }
+                    }, label: {
+                        Text("Obliqueness")
+                            .font(.custom("Fjalla One", size: 22))
+                            .frame(width: 120, height: 50)
+                            .foregroundColor(textFilterValues.obliquenessSelected ? Color.yellow : textFilterValues.textFilterNames["Obliqueness"] != nil ? Color.white : Color.black)
+                    }) //Button
+                        .foregroundColor(textFilterValues.textFilterNames["Obliqueness"] != nil ? Color.white : Color.black)
+                        .background(textFilterValues.textFilterNames["Obliqueness"] != nil ? Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1) : nil)
+                        .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
+                    
+                    //obliqueness button
+                    Button(action: {
+                        if textFilterValues.textFilterNames["Obliqueness"] != nil {
+                            textFilterValues.obliquenessSelected = false
+                            textFilterValues.textFilterNames.removeValue(forKey: "Obliqueness")
+                        } else {
+                            textFilterValues.obliquenessSelected = true
+                            textFilterValues.textFilterNames["Obliqueness"] = textFilterValues.obliquenessAmount
+                        }
+                    }, label: {
+                        Text("Obliqueness")
+                            .font(.custom("Fjalla One", size: 22))
+                            .frame(width: 120, height: 50)
+                            .foregroundColor(textFilterValues.obliquenessSelected ? Color.yellow : textFilterValues.textFilterNames["Obliqueness"] != nil ? Color.white : Color.black)
+                    }) //Button
+                        .foregroundColor(textFilterValues.textFilterNames["Obliqueness"] != nil ? Color.white : Color.black)
+                        .background(textFilterValues.textFilterNames["Obliqueness"] != nil ? Color(.sRGB, red: 120 / 255, green: 134 / 255, blue: 255 / 255, opacity: 1) : nil)
+                        .cornerRadius(/*@START_MENU_TOKEN@*/5.0/*@END_MENU_TOKEN@*/)
+                }
             })
         })
     }
