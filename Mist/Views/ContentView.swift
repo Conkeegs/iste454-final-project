@@ -11,6 +11,12 @@ struct ContentView: View {
     var body: some View {
         NavigationView(content: {
             ZStack{
+                Image("background")
+                    .resizable()
+                    .scaledToFill()
+                    .clipped()
+                    .edgesIgnoringSafeArea([.top])
+                    .edgesIgnoringSafeArea([.bottom])
                 NavigationLink("+", destination: {
                     ImageEditor()
                 })
@@ -21,7 +27,6 @@ struct ContentView: View {
                 YourTemplates()
             }
             .frame(maxWidth: .infinity)
-            .background(Color.cyan)
             .preferredColorScheme(.dark)
         }) //NavigationView
     } //body
